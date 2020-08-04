@@ -1,0 +1,21 @@
+<div class="ui container main">
+   <div class="ui">
+      <video controls poster="{thumbnail}" style="width: 100%" class="rounded">
+         <source src="{video}" type="video/mp4">
+         Your browser does not support the video tag.
+      </video>
+   </div>
+   <br>
+   <div class="ui equal width grid">
+     <div class="ten wide column">
+       <h1 class="ui big header">{title}</h1>
+       <h3 class="ui header">Description</h3>
+       <p>{description}</p>
+     </div>
+     <div class="six wide column right aligned">
+       <h3 class="ui medium header right aligned" style="margin-bottom: 0.3em;">{views} views</h3>
+       <h3 class="ui small header right aligned" style="margin-top: 0;">Video by <a href="{uploader_url}">{uploader}</a></h3>
+       {download}
+     </div>
+   </div>
+</div>
