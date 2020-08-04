@@ -2,13 +2,14 @@
 <html lang="en">
   <head>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.6/dist/semantic.min.css">
     <script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.6/dist/semantic.min.js"></script>
     <link rel="stylesheet" type="text/css" href="/hobune.css">
     <title>{title} - Hobune</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta charset="UTF-8">
+    {meta}
   </head>
   <body>
     <div class="ui fixed inverted menu">
@@ -19,12 +20,14 @@
         <div class="ui simple dropdown item">
           <a href="/channels">Channels</a> <i class="dropdown icon"></i>
           <div class="menu">
-            <a class="item" href="/channels/other.html">Other videos</a>
+            <!-- <a class="item" href="/channels/other.html">Other videos</a> -->
+            <a class="item" href="/channels/other">Other videos</a>
             <div class="divider"></div>
             {channels}
           </div>
         </div>
-        <a href="/contact.html" class="item right">Contact</a>
+        <!-- <a href="/contact.html" class="item right">Contact</a> -->
+        <a href="/contact" class="item right">Contact</a>
       </div>
     </div>
     {content}

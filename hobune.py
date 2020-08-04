@@ -25,36 +25,52 @@ channels = {
     }
 }
 
+# Allows you to disable .html extensions for links if you wish
+# Doesn't affect actual filenames, just links
+htmlext = ""#".html"
+
+# Generate meta tags
+def genMeta(meta):
+    h = ""
+    for m in meta:
+        h += f'<meta name="{m}" content="{html.escape(meta[m])}">'
+    return h
+
 # Populate channels list
 print("Populating channels list")
 for root, subdirs, files in os.walk(webpath + ytpath):
+    #sort videos by date
+    files.sort(reverse = True)
     for file in (file for file in files if file.endswith(".info.json")):
-        with open(os.path.join(root,file),"r") as f:
-            v = json.load(f)
-        if "/channels/" in root:
-            channelid = v["channel_id"]
-            if not channelid in channels:
-                channels[channelid] = {
-                    "name": "",
-                    "date": 0,
-                    "videos": []
-                }
-            if channels[channelid]["date"] < int(v["upload_date"]):
-                channels[channelid]["date"] = int(v["upload_date"])
-                channels[channelid]["name"] = v["uploader"]
-        else:
-            channelid = "other"
-        v["custom_thumbnail"] = "/default.png"
-        for ext in ["webp","jpg","png"]:
-            if os.path.exists(x := os.path.join(root,file)[:-len('.info.json')] + f".{ext}"):
-                v["custom_thumbnail"] = x[len(webpath)-1:]
-        channels[channelid]["videos"].append(v)
+        try:
+            with open(os.path.join(root,file),"r") as f:
+                v = json.load(f)
+            if "/channels/" in root:
+                channelid = v["uploader_id"]
+                if not channelid in channels:
+                    channels[channelid] = {
+                        "name": "",
+                        "date": 0,
+                        "videos": []
+                    }
+                if channels[channelid]["date"] < int(v["upload_date"]):
+                    channels[channelid]["date"] = int(v["upload_date"])
+                    channels[channelid]["name"] = v["uploader"]
+            else:
+                channelid = "other"
+            v["custom_thumbnail"] = "/default.png"
+            for ext in ["webp","jpg","png"]:
+                if os.path.exists(x := os.path.join(root,file)[:-len('.info.json')] + f".{ext}"):
+                    v["custom_thumbnail"] = x[len(webpath)-1:]
+            channels[channelid]["videos"].append(v)
+        except:
+            print(f"Error processing {file}")
 
 # Add channels to main navbar dropdown
 dropdownhtml = ""
 for channel in channels:
     if not channel == "other":
-        dropdownhtml += f'<a class="item" href="/channels/{channel}.html">{html.escape(channels[channel]["name"])}</a>'
+        dropdownhtml += f'<a class="item" href="/channels/{channel}{htmlext}">{html.escape(channels[channel]["name"])}</a>'
 templates["base"] = templates["base"].replace("{channels}",dropdownhtml)
 
 # Create video pages
@@ -149,12 +165,17 @@ for root, subdirs, files in os.walk(webpath + ytpath):
         # Create HTML
         with open(os.path.join(webpath,f"videos/{v['id']}.html"),"w") as f:
             f.write(
-                templates["base"].format(title=html.escape(v['title']),content=
+                templates["base"].format(title=html.escape(v['title']),meta=genMeta(
+                    {
+                        "description": v['description'][:256],
+                        "author": v['uploader']
+                    }
+                ),content=
                     templates["video"].format(
                         title=html.escape(v['title']),
                         description=html.escape(v['description']).replace('\n','<br>'),
                         views=v['view_count'],
-                        uploader_url=('/channels/' + v['channel_id'] + '.html' if '/channels/' in root else '/channels/other.html'),
+                        uploader_url=('/channels/' + v['uploader_id'] + f'{htmlext}' if '/channels/' in root else f'/channels/other{htmlext}'),
                         uploader=html.escape(v['uploader']),
                         video=urllib.parse.quote(mp4path),
                         thumbnail=urllib.parse.quote(thumbnail),
@@ -169,7 +190,7 @@ channelindex = ""
 for channel in channels:
     channelindex += f"""
                     <div class="column">
-                        <a href="/channels/{channel}.html" class="ui card">
+                        <a href="/channels/{channel}{htmlext}" class="ui card">
                             <div class="content">
                                 <div class="header">{html.escape(channels[channel]['name'])}</div>
                                 <div class="meta">{channel}</div>
@@ -185,9 +206,9 @@ for channel in channels:
         for v in channels[channel]["videos"]:
             cards += f"""
             <div class="column">
-                <a href="/videos/{v['id']}.html" class="ui fluid card">
+                <a href="/videos/{v['id']}{htmlext}" class="ui fluid card">
                   <div class="image">
-                        <img src="{urllib.parse.quote(v['custom_thumbnail'])}">
+                        <img loading="lazy" src="{urllib.parse.quote(v['custom_thumbnail'])}">
                   </div>
                   <div class="content">
                     <h3 class="header">{html.escape(v['title'])}</h3>
@@ -196,12 +217,20 @@ for channel in channels:
                 </a>
             </div>
             """
-        f.write(templates["base"].format(title=html.escape(channels[channel]['name']),content=templates["channel"].format(
+        f.write(templates["base"].format(title=html.escape(channels[channel]['name']),meta=genMeta(
+            {
+                "description": f"{channels[channel]['name']}'s channel archive"
+            }
+        ),content=templates["channel"].format(
                 channel=html.escape(channels[channel]['name']),
                 cards=cards
             )))
 with open(os.path.join(webpath,f"channels/index.html"),"w") as f:
-    f.write(templates["base"].format(title=html.escape(channels[channel]['name']),content=templates["channel"].format(
+    f.write(templates["base"].format(title="Channels",meta=genMeta(
+            {
+                "description": "Archived channels"
+            }
+        ),content=templates["channel"].format(
                 channel="Channels",
                 cards=channelindex
             )))
@@ -209,8 +238,12 @@ with open(os.path.join(webpath,f"channels/index.html"),"w") as f:
 # Write other pages
 print("Writing other pages")
 with open(os.path.join(webpath,f"contact.html"),"w") as f:
-    f.write(templates["base"].format(title="Contact",content=templates["contact"]))
+    f.write(templates["base"].format(title="Contact",meta="",content=templates["contact"]))
 with open(os.path.join(webpath,f"index.html"),"w") as f:
-    f.write(templates["base"].format(title="Home",content=templates["index"]))
+    f.write(templates["base"].format(title="Home",meta=genMeta(
+            {
+                "description": "hobune - archive"
+            }
+        ),content=templates["index"]))
 
 print("Done")
