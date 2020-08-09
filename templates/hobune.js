@@ -17,3 +17,13 @@ for(var i = 0, l = toSort.length; i < l; i++) {
     parent.appendChild(toSort[i]);
 }
 */
+
+function channelSearch() {
+	document.querySelectorAll('.searchable').forEach(function(e) {
+    	if ((e.dataset.name.toLowerCase()).includes(document.getElementById('searchbox').value.toLowerCase())) {
+    		e.classList.remove("hide");
+    	} else {
+    		e.classList.add("hide");
+    	}
+	});
+}

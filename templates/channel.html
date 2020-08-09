@@ -1,5 +1,12 @@
 <div class="ui container main">
-  <h1>{channel}</h1>
+  <div class="ui grid">
+    <div class="eleven wide column">
+      <h1 style="display: inline-block;">{channel}</h1>
+    </div>
+    <div class="four wide column right aligned right floated">
+      <div class="ui icon input"><input type="text" id="searchbox" oninput="channelSearch()" placeholder="Search..."><i class="search icon"></i></div>
+    </div>
+  </div>
   <div class="ui three column grid">
     {cards}
   </div>

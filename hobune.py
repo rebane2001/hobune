@@ -198,7 +198,7 @@ print("Creating channel pages")
 channelindex = ""
 for channel in channels:
     channelindex += f"""
-                    <div class="column">
+                    <div class="column searchable" data-name="{html.escape(channels[channel]['name'])}">
                         <a href="/channels/{channel}{htmlext}" class="ui card">
                             <div class="content">
                                 <div class="header">{html.escape(channels[channel]['name'])}</div>
@@ -214,7 +214,7 @@ for channel in channels:
         cards = ""
         for v in channels[channel]["videos"]:
             cards += f"""
-            <div class="column">
+            <div class="column searchable" data-name="{html.escape(v['title'])}">
                 <a href="/videos/{v['id']}{htmlext}" class="ui fluid card">
                   <div class="image">
                         <img loading="lazy" src="{urllib.parse.quote(v['custom_thumbnail'])}">
