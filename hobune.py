@@ -4,19 +4,24 @@ import html
 import json
 import os
 
-ytpath = "files/"
-webpath = "/var/www/html/"
+# Location of the video files (local)
+ytpath = "/var/www/html/files/"
+# Location of the video files (public)
+ytpathweb = "/files/" # Could be something like https://example.com/files/ as well
+# Where HTML files will be saved
+outpath = "/var/www/html/"
 
 # Load html templates into memory
 templates = {}
 for template in os.listdir('templates'):
-    with open(os.path.join('templates',template),"r") as f:
-        templates[template[:-len(".html")]] = f.read()
+    if template.endswith(".html"):
+        with open(os.path.join('templates',template),"r") as f:
+            templates[template[:-len(".html")]] = f.read()
 
 # Copy assets
-shutil.copy("templates/hobune.css",webpath)
-shutil.copy("templates/hobune.js",webpath)
-shutil.copy("templates/favicon.ico",webpath)
+shutil.copy("templates/hobune.css",outpath)
+shutil.copy("templates/hobune.js",outpath)
+shutil.copy("templates/favicon.ico",outpath)
 
 # Initialize channels list
 channels = {
@@ -40,7 +45,7 @@ def genMeta(meta):
 
 # Populate channels list
 print("Populating channels list")
-for root, subdirs, files in os.walk(webpath + ytpath):
+for root, subdirs, files in os.walk(ytpath):
     #sort videos by date
     files.sort(reverse = True)
     for file in (file for file in files if file.endswith(".info.json")):
@@ -63,7 +68,7 @@ for root, subdirs, files in os.walk(webpath + ytpath):
             v["custom_thumbnail"] = "/default.png"
             for ext in ["webp","jpg","png"]:
                 if os.path.exists(x := os.path.join(root,file)[:-len('.info.json')] + f".{ext}"):
-                    v["custom_thumbnail"] = x[len(webpath)-1:]
+                    v["custom_thumbnail"] = ytpathweb + x[len(ytpath):]
             channels[channelid]["videos"].append(v)
         except:
             print(f"Error processing {file}")
@@ -76,19 +81,19 @@ for channel in channels:
 templates["base"] = templates["base"].replace("{channels}",dropdownhtml)
 
 # Create video pages
-for root, subdirs, files in os.walk(webpath + ytpath):
+for root, subdirs, files in os.walk(ytpath):
     print("Creating video pages for",root)
     for file in (file for file in files if file.endswith(".info.json")):
         with open(os.path.join(root,file),"r") as f:
             v = json.load(f)
         # Set mp4 path
-        mp4path = f"{os.path.join(root[len(webpath)-1:], file[:-len('.info.json')])}.mp4"
+        mp4path = f"{os.path.join(ytpathweb + root[len(ytpath):], file[:-len('.info.json')])}.mp4"
 
         # Get thumbnail path
         thumbnail = "/default.png"
         for ext in ["webp","jpg","png"]:
             if os.path.exists(x := os.path.join(root,file)[:-len('.info.json')] + f".{ext}"):
-                thumbnail = x[len(webpath)-1:]
+                thumbnail = ytpathweb + x[len(ytpath):]
 
         # Create a download button for the video
         downloadbtn = f"""
@@ -117,7 +122,7 @@ for root, subdirs, files in os.walk(webpath + ytpath):
                         <a class="ui basic right pointing label">
                             4K/{ext}
                         </a>
-                        <a href="/dl{urllib.parse.quote(altpath[len(webpath)-1:])}">
+                        <a href="/dl{urllib.parse.quote(ytpathweb + altpath[len(ytpath):])}">
                             <div class="ui button">
                                 <i class="download icon"></i> Download video
                             </div>
@@ -129,7 +134,7 @@ for root, subdirs, files in os.walk(webpath + ytpath):
         if os.path.exists(descfile := os.path.join(root,file)[:-len('.info.json')] + f".description"):
             downloadbtn += f"""
                 <br>
-                <a href="/dl{urllib.parse.quote(descfile[len(webpath)-1:])}">
+                <a href="/dl{urllib.parse.quote(ytpathweb + descfile[len(ytpath):])}">
                     <div class="ui button downloadbtn">
                         <i class="download icon"></i> Description
                     </div>
@@ -156,7 +161,7 @@ for root, subdirs, files in os.walk(webpath + ytpath):
                         <a class="ui basic right pointing label">
                             {vtt[len(file[:-len('.info.json')])+1:-len('.vtt')]}
                         </a>
-                        <a href="/dl{urllib.parse.quote(os.path.join(root[len(webpath)-1:], vtt))}">
+                        <a href="/dl{urllib.parse.quote(os.path.join(ytpathweb + root[len(ytpath):], vtt))}">
                             <div class="ui button">
                                 <i class="download icon"></i> Subtitles
                             </div>
@@ -165,7 +170,7 @@ for root, subdirs, files in os.walk(webpath + ytpath):
                 """
 
         # Create HTML
-        with open(os.path.join(webpath,f"videos/{v['id']}.html"),"w") as f:
+        with open(os.path.join(outpath,f"videos/{v['id']}.html"),"w") as f:
             f.write(
                 templates["base"].format(title=html.escape(v['title']),meta=genMeta(
                     {
@@ -205,7 +210,7 @@ for channel in channels:
                         </a>
                     </div>
                 """
-    with open(os.path.join(webpath,f"channels/{channel}.html"),"w") as f:
+    with open(os.path.join(outpath,f"channels/{channel}.html"),"w") as f:
         cards = ""
         for v in channels[channel]["videos"]:
             cards += f"""
@@ -229,7 +234,7 @@ for channel in channels:
                 channel=html.escape(channels[channel]['name']),
                 cards=cards
             )))
-with open(os.path.join(webpath,f"channels/index.html"),"w") as f:
+with open(os.path.join(outpath,f"channels/index.html"),"w") as f:
     f.write(templates["base"].format(title="Channels",meta=genMeta(
             {
                 "description": "Archived channels"
@@ -241,9 +246,9 @@ with open(os.path.join(webpath,f"channels/index.html"),"w") as f:
 
 # Write other pages
 print("Writing other pages")
-with open(os.path.join(webpath,f"contact.html"),"w") as f:
+with open(os.path.join(outpath,f"contact.html"),"w") as f:
     f.write(templates["base"].format(title="Contact",meta="",content=templates["contact"]))
-with open(os.path.join(webpath,f"index.html"),"w") as f:
+with open(os.path.join(outpath,f"index.html"),"w") as f:
     f.write(templates["base"].format(title="Home",meta=genMeta(
             {
                 "description": "hobune - archive"
