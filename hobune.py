@@ -13,8 +13,10 @@ for template in os.listdir('templates'):
     with open(os.path.join('templates',template),"r") as f:
         templates[template[:-len(".html")]] = f.read()
 
-# Copy CSS
+# Copy assets
 shutil.copy("templates/hobune.css",webpath)
+shutil.copy("templates/hobune.js",webpath)
+shutil.copy("templates/favicon.ico",webpath)
 
 # Initialize channels list
 channels = {
@@ -176,7 +178,9 @@ for root, subdirs, files in os.walk(webpath + ytpath):
                         description=html.escape(v['description']).replace('\n','<br>'),
                         views=v['view_count'],
                         uploader_url=('/channels/' + v['uploader_id'] + f'{htmlext}' if '/channels/' in root else f'/channels/other{htmlext}'),
+                        uploader_id=v['uploader_id'],
                         uploader=html.escape(v['uploader']),
+                        date=f"{v['upload_date'][:4]}-{v['upload_date'][4:6]}-{v['upload_date'][6:]}",
                         video=urllib.parse.quote(mp4path),
                         thumbnail=urllib.parse.quote(thumbnail),
                         download=downloadbtn
@@ -212,7 +216,7 @@ for channel in channels:
                   </div>
                   <div class="content">
                     <h3 class="header">{html.escape(v['title'])}</h3>
-                    <p>{v['view_count']} views</p>
+                    <p>{v['view_count']} views, {v['upload_date'][:4]}-{v['upload_date'][4:6]}-{v['upload_date'][6:]}</p>
                   </div>
                 </a>
             </div>
