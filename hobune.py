@@ -69,6 +69,10 @@ for root, subdirs, files in os.walk(ytpath):
             for ext in ["webp","jpg","png"]:
                 if os.path.exists(x := os.path.join(root,file)[:-len('.info.json')] + f".{ext}"):
                     v["custom_thumbnail"] = ytpathweb + x[len(ytpath):]
+            # Remove unnecessary keys to prevent memory exhaustion on big archives
+            [v.pop(k) for k in list(v.keys()) if not k in 
+                ["title","id","custom_thumbnail","view_count","upload_date"]
+            ]
             channels[channelid]["videos"].append(v)
         except:
             print(f"Error processing {file}")
