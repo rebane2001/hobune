@@ -84,114 +84,117 @@ templates["base"] = templates["base"].replace("{channels}",dropdownhtml)
 for root, subdirs, files in os.walk(ytpath):
     print("Creating video pages for",root)
     for file in (file for file in files if file.endswith(".info.json")):
-        with open(os.path.join(root,file),"r") as f:
-            v = json.load(f)
-        # Set mp4 path
-        mp4path = f"{os.path.join(ytpathweb + root[len(ytpath):], file[:-len('.info.json')])}.mp4"
-
-        # Get thumbnail path
-        thumbnail = "/default.png"
-        for ext in ["webp","jpg","png"]:
-            if os.path.exists(x := os.path.join(root,file)[:-len('.info.json')] + f".{ext}"):
-                thumbnail = ytpathweb + x[len(ytpath):]
-
-        # Create a download button for the video
-        downloadbtn = f"""
-            <a href="/dl{urllib.parse.quote(mp4path)}">
-                <div class="ui button downloadbtn">
-                    <i class="download icon"></i> Download video
-                </div>
-            </a>
-        """
-
-        # Create multiple video download buttons if we have multiple formats
-        for ext in ["webm","mkv"]:
-            if os.path.exists(altpath := os.path.join(root,file)[:-len('.info.json')] + f".{ext}"):
-                downloadbtn = f"""
-                    <div class="ui left labeled button downloadbtn">
-                        <a class="ui basic right pointing label">
-                            1080/mp4
-                        </a>
-                        <a href="/dl{urllib.parse.quote(mp4path)}">
-                            <div class="ui button">
-                                <i class="download icon"></i> Download video
-                            </div>
-                        </a>
-                    </div>
-                    <div class="ui left labeled button downloadbtn">
-                        <a class="ui basic right pointing label">
-                            4K/{ext}
-                        </a>
-                        <a href="/dl{urllib.parse.quote(ytpathweb + altpath[len(ytpath):])}">
-                            <div class="ui button">
-                                <i class="download icon"></i> Download video
-                            </div>
-                        </a>
-                    </div>
-                """
-
-        # Description download
-        if os.path.exists(descfile := os.path.join(root,file)[:-len('.info.json')] + f".description"):
-            downloadbtn += f"""
-                <br>
-                <a href="/dl{urllib.parse.quote(ytpathweb + descfile[len(ytpath):])}">
+        try:
+            with open(os.path.join(root,file),"r") as f:
+                v = json.load(f)
+            # Set mp4 path
+            mp4path = f"{os.path.join(ytpathweb + root[len(ytpath):], file[:-len('.info.json')])}.mp4"
+    
+            # Get thumbnail path
+            thumbnail = "/default.png"
+            for ext in ["webp","jpg","png"]:
+                if os.path.exists(x := os.path.join(root,file)[:-len('.info.json')] + f".{ext}"):
+                    thumbnail = ytpathweb + x[len(ytpath):]
+    
+            # Create a download button for the video
+            downloadbtn = f"""
+                <a href="/dl{urllib.parse.quote(mp4path)}">
                     <div class="ui button downloadbtn">
-                        <i class="download icon"></i> Description
+                        <i class="download icon"></i> Download video
                     </div>
                 </a>
             """
-
-        # Thumbnail download
-        if not thumbnail == "/default.png":
-            downloadbtn += f"""
-                <br>
-                <a href="/dl{urllib.parse.quote(thumbnail)}">
-                    <div class="ui button downloadbtn">
-                        <i class="download icon"></i> Thumbnail
-                    </div>
-                </a>
-            """
-
-        # Subtitles download
-        for vtt in (vtt for vtt in files if vtt.endswith(".vtt")):
-            if vtt.startswith(file[:-len('.info.json')]):
+    
+            # Create multiple video download buttons if we have multiple formats
+            for ext in ["webm","mkv"]:
+                if os.path.exists(altpath := os.path.join(root,file)[:-len('.info.json')] + f".{ext}"):
+                    downloadbtn = f"""
+                        <div class="ui left labeled button downloadbtn">
+                            <a class="ui basic right pointing label">
+                                1080/mp4
+                            </a>
+                            <a href="/dl{urllib.parse.quote(mp4path)}">
+                                <div class="ui button">
+                                    <i class="download icon"></i> Download video
+                                </div>
+                            </a>
+                        </div>
+                        <div class="ui left labeled button downloadbtn">
+                            <a class="ui basic right pointing label">
+                                4K/{ext}
+                            </a>
+                            <a href="/dl{urllib.parse.quote(ytpathweb + altpath[len(ytpath):])}">
+                                <div class="ui button">
+                                    <i class="download icon"></i> Download video
+                                </div>
+                            </a>
+                        </div>
+                    """
+    
+            # Description download
+            if os.path.exists(descfile := os.path.join(root,file)[:-len('.info.json')] + f".description"):
                 downloadbtn += f"""
                     <br>
-                    <div class="ui left labeled button downloadbtn">
-                        <a class="ui basic right pointing label">
-                            {vtt[len(file[:-len('.info.json')])+1:-len('.vtt')]}
-                        </a>
-                        <a href="/dl{urllib.parse.quote(os.path.join(ytpathweb + root[len(ytpath):], vtt))}">
-                            <div class="ui button">
-                                <i class="download icon"></i> Subtitles
-                            </div>
-                        </a>
-                    </div>
+                    <a href="/dl{urllib.parse.quote(ytpathweb + descfile[len(ytpath):])}">
+                        <div class="ui button downloadbtn">
+                            <i class="download icon"></i> Description
+                        </div>
+                    </a>
                 """
-
-        # Create HTML
-        with open(os.path.join(outpath,f"videos/{v['id']}.html"),"w") as f:
-            f.write(
-                templates["base"].format(title=html.escape(v['title']),meta=genMeta(
-                    {
-                        "description": v['description'][:256],
-                        "author": v['uploader']
-                    }
-                ),content=
-                    templates["video"].format(
-                        title=html.escape(v['title']),
-                        description=html.escape(v['description']).replace('\n','<br>'),
-                        views=v['view_count'],
-                        uploader_url=('/channels/' + v['uploader_id'] + f'{htmlext}' if '/channels/' in root else f'/channels/other{htmlext}'),
-                        uploader_id=v['uploader_id'],
-                        uploader=html.escape(v['uploader']),
-                        date=f"{v['upload_date'][:4]}-{v['upload_date'][4:6]}-{v['upload_date'][6:]}",
-                        video=urllib.parse.quote(mp4path),
-                        thumbnail=urllib.parse.quote(thumbnail),
-                        download=downloadbtn
+    
+            # Thumbnail download
+            if not thumbnail == "/default.png":
+                downloadbtn += f"""
+                    <br>
+                    <a href="/dl{urllib.parse.quote(thumbnail)}">
+                        <div class="ui button downloadbtn">
+                            <i class="download icon"></i> Thumbnail
+                        </div>
+                    </a>
+                """
+    
+            # Subtitles download
+            for vtt in (vtt for vtt in files if vtt.endswith(".vtt")):
+                if vtt.startswith(file[:-len('.info.json')]):
+                    downloadbtn += f"""
+                        <br>
+                        <div class="ui left labeled button downloadbtn">
+                            <a class="ui basic right pointing label">
+                                {vtt[len(file[:-len('.info.json')])+1:-len('.vtt')]}
+                            </a>
+                            <a href="/dl{urllib.parse.quote(os.path.join(ytpathweb + root[len(ytpath):], vtt))}">
+                                <div class="ui button">
+                                    <i class="download icon"></i> Subtitles
+                                </div>
+                            </a>
+                        </div>
+                    """
+    
+            # Create HTML
+            with open(os.path.join(outpath,f"videos/{v['id']}.html"),"w") as f:
+                f.write(
+                    templates["base"].format(title=html.escape(v['title']),meta=genMeta(
+                        {
+                            "description": v['description'][:256],
+                            "author": v['uploader']
+                        }
+                    ),content=
+                        templates["video"].format(
+                            title=html.escape(v['title']),
+                            description=html.escape(v['description']).replace('\n','<br>'),
+                            views=v['view_count'],
+                            uploader_url=('/channels/' + v['uploader_id'] + f'{htmlext}' if '/channels/' in root else f'/channels/other{htmlext}'),
+                            uploader_id=v['uploader_id'],
+                            uploader=html.escape(v['uploader']),
+                            date=f"{v['upload_date'][:4]}-{v['upload_date'][4:6]}-{v['upload_date'][6:]}",
+                            video=urllib.parse.quote(mp4path),
+                            thumbnail=urllib.parse.quote(thumbnail),
+                            download=downloadbtn
+                        )
                     )
                 )
-            )
+        except:
+            print(f"Error processing {file}")
 
 # Create channel pages
 print("Creating channel pages")
