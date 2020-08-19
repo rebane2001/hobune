@@ -8,6 +8,8 @@ import os
 ytpath = "/var/www/html/files/"
 # Location of the video files (public)
 ytpathweb = "/files/" # Could be something like https://example.com/files/ as well
+# Location of the website root (public)
+webpath = "/" # Could be something like https://example.com/hobune/ as well
 # Where HTML files will be saved
 outpath = "/var/www/html/"
 
@@ -81,7 +83,7 @@ for root, subdirs, files in os.walk(ytpath):
 dropdownhtml = ""
 for channel in channels:
     if not channel == "other":
-        dropdownhtml += f'<a class="item" href="/channels/{channel}{htmlext}">{html.escape(channels[channel]["name"])}</a>'
+        dropdownhtml += f'<a class="item" href="{webpath}channels/{channel}{htmlext}">{html.escape(channels[channel]["name"])}</a>'
 templates["base"] = templates["base"].replace("{channels}",dropdownhtml)
 
 # Create video pages
@@ -187,7 +189,7 @@ for root, subdirs, files in os.walk(ytpath):
                             title=html.escape(v['title']),
                             description=html.escape(v['description']).replace('\n','<br>'),
                             views=v['view_count'],
-                            uploader_url=('/channels/' + v['uploader_id'] + f'{htmlext}' if '/channels/' in root else f'/channels/other{htmlext}'),
+                            uploader_url=(f'{webpath}channels/' + v['uploader_id'] + f'{htmlext}' if '/channels/' in root else f'{webpath}channels/other{htmlext}'),
                             uploader_id=v['uploader_id'],
                             uploader=html.escape(v['uploader']),
                             date=f"{v['upload_date'][:4]}-{v['upload_date'][4:6]}-{v['upload_date'][6:]}",
@@ -206,7 +208,7 @@ channelindex = ""
 for channel in channels:
     channelindex += f"""
                     <div class="column searchable" data-name="{html.escape(channels[channel]['name'])}">
-                        <a href="/channels/{channel}{htmlext}" class="ui card">
+                        <a href="{webpath}channels/{channel}{htmlext}" class="ui card">
                             <div class="content">
                                 <div class="header">{html.escape(channels[channel]['name'])}</div>
                                 <div class="meta">{channel}</div>
@@ -222,7 +224,7 @@ for channel in channels:
         for v in channels[channel]["videos"]:
             cards += f"""
             <div class="column searchable" data-name="{html.escape(v['title'])}">
-                <a href="/videos/{v['id']}{htmlext}" class="ui fluid card">
+                <a href="{webpath}videos/{v['id']}{htmlext}" class="ui fluid card">
                   <div class="image">
                         <img loading="lazy" src="{urllib.parse.quote(v['custom_thumbnail'])}">
                   </div>
