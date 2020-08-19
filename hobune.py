@@ -89,12 +89,30 @@ for root, subdirs, files in os.walk(ytpath):
         except:
             print(f"Error processing {file}")
 
-# Add channels to main navbar dropdown
-dropdownhtml = ""
-for channel in channels:
-    if not channel == "other":
-        dropdownhtml += f'<a class="item" href="{webpath}channels/{channel}{htmlext}">{html.escape(channels[channel]["name"])}</a>'
-templates["base"] = templates["base"].replace("{channels}",dropdownhtml)
+# Add channels to main navbar dropdown (but only if less than 25, otherwise the dropdown menu gets too long)
+if len(channels) < 25:
+    dropdownhtml = ""
+    for channel in channels:
+        if not channel == "other":
+            dropdownhtml += f'<a class="item" href="{webpath}channels/{channel}{htmlext}">{html.escape(channels[channel]["name"])}</a>'
+    channelshtml = f'''
+            <div class="ui simple dropdown item">
+            <a href="{webpath}channels">Channels</a> <i class="dropdown icon"></i>
+            <div class="menu">
+                <!-- <a class="item" href="/channels/other.html">Other videos</a> -->
+                <a class="item" href="{webpath}channels/other">Other videos</a>
+                <div class="divider"></div>
+                {dropdownhtml}
+            </div>
+            </div>
+    '''
+else:
+    channelshtml = f'''
+        <a href="{webpath}" class="item">
+          Channels
+        </a>
+    '''
+templates["base"] = templates["base"].replace("{channels}",channelshtml)
 
 # Create video pages
 for root, subdirs, files in os.walk(ytpath):
