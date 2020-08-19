@@ -112,7 +112,7 @@ else:
           Channels
         </a>
     '''
-templates["base"] = templates["base"].replace("{channels}",channelshtml)
+templates["base"] = templates["base"].replace("{channels}",channelshtml).replace("{webpath}",webpath)
 
 # Create video pages
 for root, subdirs, files in os.walk(ytpath):
