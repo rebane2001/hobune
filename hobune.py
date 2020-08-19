@@ -13,6 +13,16 @@ webpath = "/" # Could be something like https://example.com/hobune/ as well
 # Where HTML files will be saved
 outpath = "/var/www/html/"
 
+# Add slashes to paths if they are missing
+if not ytpath[:-1] == "/":
+    ytpath += "/"
+if not ytpathweb[:-1] == "/":
+    ytpathweb += "/"
+if not webpath[:-1] == "/":
+    webpath += "/"
+if not outpath[:-1] == "/":
+    outpath += "/"
+
 # Load html templates into memory
 templates = {}
 for template in os.listdir('templates'):
