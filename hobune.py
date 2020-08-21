@@ -14,13 +14,13 @@ webpath = "/" # Could be something like https://example.com/hobune/ as well
 outpath = "/var/www/html/"
 
 # Add slashes to paths if they are missing
-if not ytpath[:-1] == "/":
+if not ytpath[-1] == "/":
     ytpath += "/"
-if not ytpathweb[:-1] == "/":
+if not ytpathweb[-1] == "/":
     ytpathweb += "/"
-if not webpath[:-1] == "/":
+if not webpath[-1] == "/":
     webpath += "/"
-if not outpath[:-1] == "/":
+if not outpath[-1] == "/":
     outpath += "/"
 
 # Load html templates into memory
