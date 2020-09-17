@@ -19,3 +19,7 @@
 .hide {
   display: none!important;
 }
+
+.removedvideo {
+  background-color: #ffb4df!important;
+}

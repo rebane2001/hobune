@@ -13,6 +13,9 @@ webpath = "/" # Could be something like https://example.com/hobune/ as well
 # Where HTML files will be saved
 outpath = "/var/www/html/"
 
+# Removed videos file - each line ends with the video ID of a removed video to "tag" it (optional)
+removedvideosfile = ""
+
 # Add slashes to paths if they are missing
 if not ytpath[-1] == "/":
     ytpath += "/"
@@ -22,6 +25,13 @@ if not webpath[-1] == "/":
     webpath += "/"
 if not outpath[-1] == "/":
     outpath += "/"
+
+# Generate removed videos list
+removedvideos = []
+with open("removed_test.txt", "r", encoding="UTF8") as f:
+    for l in f:
+        if len(l) > 11:
+            removedvideos.append(l[-12:-1])
 
 # Load html templates into memory
 templates = {}
@@ -81,9 +91,11 @@ for root, subdirs, files in os.walk(ytpath):
             for ext in ["webp","jpg","png"]:
                 if os.path.exists(x := os.path.join(root,file)[:-len('.info.json')] + f".{ext}"):
                     v["custom_thumbnail"] = ytpathweb + x[len(ytpath):]
+            # Tag video if removed
+            v["removed"] = (v["id"] in removedvideos)
             # Remove unnecessary keys to prevent memory exhaustion on big archives
             [v.pop(k) for k in list(v.keys()) if not k in 
-                ["title","id","custom_thumbnail","view_count","upload_date"]
+                ["title","id","custom_thumbnail","view_count","upload_date","removed"]
             ]
             channels[channelid]["videos"].append(v)
         except:
@@ -256,7 +268,7 @@ for channel in channels:
                   <div class="image">
                         <img loading="lazy" src="{urllib.parse.quote(v['custom_thumbnail'])}">
                   </div>
-                  <div class="content">
+                  <div class="content{' removedvideo' if v["removed"] else ''}">
                     <h3 class="header">{html.escape(v['title'])}</h3>
                     <p>{v['view_count']} views, {v['upload_date'][:4]}-{v['upload_date'][4:6]}-{v['upload_date'][6:]}</p>
                   </div>
