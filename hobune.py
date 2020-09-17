@@ -28,10 +28,11 @@ if not outpath[-1] == "/":
 
 # Generate removed videos list
 removedvideos = []
-with open("removed_test.txt", "r", encoding="UTF8") as f:
-    for l in f:
-        if len(l) > 11:
-            removedvideos.append(l[-12:-1])
+if not removedvideosfile == "":
+    with open(removedvideosfile, "r") as f:
+        for l in f:
+            if len(l) > 11:
+                removedvideos.append(l[-12:-1])
 
 # Load html templates into memory
 templates = {}
