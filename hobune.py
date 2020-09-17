@@ -265,7 +265,7 @@ for channel in channels:
             cards += f"""
             <div class="column searchable" data-name="{html.escape(v['title'])}">
                 <a href="{webpath}videos/{v['id']}{htmlext}" class="ui fluid card">
-                  <div class="image">
+                  <div class="image thumbnail">
                         <img loading="lazy" src="{urllib.parse.quote(v['custom_thumbnail'])}">
                   </div>
                   <div class="content{' removedvideo' if v["removed"] else ''}">

@@ -23,3 +23,7 @@
 .removedvideo {
   background-color: #ffb4df!important;
 }
+
+.thumbnail {
+  min-height: 201px;
+}
