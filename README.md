@@ -7,11 +7,12 @@ A lightweight static HTML framework for self-hosting video archives.
 - Channel pages (with thumbnails)
 - Watch page (with stats, description etc)
 - Download buttons (video, description, thumbnail, subtitles)
+- Highlight deleted videos
 - Client-side search
 
 # Usage
 1. Clone this repo
-2. Open up `hobune.py` and edit the `ytpath`, `ytpathweb` and `outpath` variables
+2. Open up `hobune.py` and edit the `ytpath`, `ytpathweb`, `webpath`, `outpath` and `removedvideosfile` variables
 3. Run `python3 hobune.py`, this will generate HTML files in your `outpath`
 4. (optionally) Configure your webserver to allow downloads from /dl URLs and HTML pages without extensions
 
