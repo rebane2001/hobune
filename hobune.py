@@ -257,7 +257,7 @@ for channel in channels:
                                 <div class="header">{html.escape(channels[channel]['name'])}</div>
                                 <div class="meta">{channel}</div>
                                 <div class="description">
-                                    {len(channels[channel]['videos'])} videos{channels[' (' + channel]['removed'] + ' removed)' if channels[channel]['removed'] > 0 else ''}
+                                    {len(channels[channel]['videos'])} videos{' (' + channels[channel]['removed'] + ' removed)' if channels[channel]['removed'] > 0 else ''}
                                 </div>
                             </div>
                         </a>
