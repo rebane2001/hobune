@@ -51,6 +51,7 @@ channels = {
     "other": {
         "name": "Other videos",
         "date": -1,
+        "removed": 0,
         "videos": []
     }
 }
@@ -94,6 +95,8 @@ for root, subdirs, files in os.walk(ytpath):
                     v["custom_thumbnail"] = ytpathweb + x[len(ytpath):]
             # Tag video if removed
             v["removed"] = (v["id"] in removedvideos)
+            if v["removed"]:
+                channels[channelid]["removed"] += 1
             # Remove unnecessary keys to prevent memory exhaustion on big archives
             [v.pop(k) for k in list(v.keys()) if not k in 
                 ["title","id","custom_thumbnail","view_count","upload_date","removed"]
@@ -254,7 +257,7 @@ for channel in channels:
                                 <div class="header">{html.escape(channels[channel]['name'])}</div>
                                 <div class="meta">{channel}</div>
                                 <div class="description">
-                                    {len(channels[channel]['videos'])} videos
+                                    {len(channels[channel]['videos'])} videos{channels[' (' + channel]['removed'] + ' removed)' if channels[channel]['removed'] > 0 else ''}
                                 </div>
                             </div>
                         </a>
