@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.6/dist/semantic.min.js"></script>
     <link rel="stylesheet" type="text/css" href="{webpath}hobune.css">
     <script src="{webpath}hobune.js"></script>
-    <title>{title} - Hobune</title>
+    <title>{title} - {sitename}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta charset="UTF-8">
     {meta}
@@ -16,11 +16,10 @@
     <div class="ui fixed inverted menu">
       <div class="ui container">
         <a href="{webpath}" class="header item">
-          Hobune
+          {sitename}
         </a>
         {channels}
-        <!-- <a href="/contact.html" class="item right">Contact</a> -->
-        <a href="{webpath}contact" class="item right">Contact</a>
+        {custompages}
       </div>
     </div>
     {content}

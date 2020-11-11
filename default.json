@@ -1,0 +1,8 @@
+{
+  "sitename": "Hobune",
+  "ytpath": "/var/www/html/files/",
+  "ytpathweb": "/files/",
+  "webpath": "/",
+  "outpath": "/var/www/html/",
+  "removedvideosfile": ""
+}

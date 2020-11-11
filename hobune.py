@@ -4,17 +4,27 @@ import html
 import json
 import os
 
-# Location of the video files (local)
-ytpath = "/var/www/html/files/"
-# Location of the video files (public)
-ytpathweb = "/files/" # Could be something like https://example.com/files/ as well
-# Location of the website root (public)
-webpath = "/" # Could be something like https://example.com/hobune/ as well
-# Where HTML files will be saved
-outpath = "/var/www/html/"
+# If config doesn't exist, create one
+if not os.path.exists("config.json"):
+    shutil.copy("default.json", "config.json")
+    print("Created config.json, please set it up and re-run Hobune")
+    exit()
+else:
+    with open("config.json","r") as f:
+        configfile = json.load(f)
+        # Name/Title of the site (eg will be shown on homepages)
+        sitename = configfile["sitename"] # "Hobune"
+        # Location of the video files (local)
+        ytpath = configfile["ytpath"] # "/var/www/html/files/"
+        # Location of the video files (public), could be something like https://example.com/files/ as well
+        ytpathweb = configfile["ytpathweb"] # "/files/"
+        # Location of the website root (public), could be something like https://example.com/hobune/ as well
+        webpath = configfile["webpath"] # "/"
+        # Where HTML files will be saved
+        outpath = configfile["outpath"] # "/var/www/html/"
+        # Removed videos file - each line ends with the video ID of a removed video to "tag" it (optional)
+        removedvideosfile = configfile["removedvideosfile"] # ""
 
-# Removed videos file - each line ends with the video ID of a removed video to "tag" it (optional)
-removedvideosfile = ""
 
 # Add slashes to paths if they are missing
 if not ytpath[-1] == "/":
@@ -82,6 +92,7 @@ for root, subdirs, files in os.walk(ytpath):
                     channels[channelid] = {
                         "name": "",
                         "date": 0,
+                        "removed": 0,
                         "videos": []
                     }
                 if channels[channelid]["date"] < int(v["upload_date"]):
@@ -128,7 +139,16 @@ else:
           Channels
         </a>
     '''
-templates["base"] = templates["base"].replace("{channels}",channelshtml).replace("{webpath}",webpath)
+
+custompageshtml = ""
+# Creating links to custom pages
+for custompage in os.listdir('custom'):
+    custompage = os.path.splitext(custompage)[0]
+    custompageshtml += f'<a href="{webpath}{custompage}{htmlext}" class="item right">{custompage}</a>'
+
+templates["base"] = templates["base"].replace("{channels}",channelshtml).replace("{custompages}",custompageshtml).replace("{webpath}",webpath).replace("{sitename}",sitename)
+
+
 
 # Create video pages
 for root, subdirs, files in os.walk(ytpath):
@@ -299,13 +319,16 @@ with open(os.path.join(outpath,f"channels/index.html"),"w") as f:
 
 # Write other pages
 print("Writing other pages")
-with open(os.path.join(outpath,f"contact.html"),"w") as f:
-    f.write(templates["base"].format(title="Contact",meta="",content=templates["contact"]))
+for custompage in os.listdir('custom'):
+    with open(f"custom/{custompage}", "r") as custompagef:
+        custompage = os.path.splitext(custompage)[0]
+        with open(os.path.join(outpath,f"{custompage}.html"),"w") as f:
+            f.write(templates["base"].format(title=custompage,meta="",content=custompagef.read()))
 with open(os.path.join(outpath,f"index.html"),"w") as f:
     f.write(templates["base"].format(title="Home",meta=genMeta(
             {
-                "description": "hobune - archive"
+                "description": "{sitename} - archive"
             }
-        ),content=templates["index"]))
+        ),content=templates["index"].replace("{sitename}",sitename)))
 
 print("Done")
