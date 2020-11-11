@@ -25,5 +25,5 @@
 }
 
 .thumbnail {
-  min-height: 201px;
+  min-height: min(12.6vw, 200px);
 }
