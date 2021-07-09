@@ -159,6 +159,10 @@ for root, subdirs, files in os.walk(ytpath):
                 v = json.load(f)
             # Set mp4 path
             mp4path = f"{os.path.join(ytpathweb + root[len(ytpath):], file[:-len('.info.json')])}.mp4"
+            for ext in ["mp4","webm","mkv"]:
+                if os.path.exists(altpath := os.path.join(root,file)[:-len('.info.json')] + f".{ext}"):
+                    mp4path = f"{os.path.join(ytpathweb + root[len(ytpath):], file[:-len('.info.json')])}.{ext}"
+                    break
     
             # Get thumbnail path
             thumbnail = "/default.png"
