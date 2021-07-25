@@ -87,7 +87,7 @@ for root, subdirs, files in os.walk(ytpath):
             with open(os.path.join(root,file),"r") as f:
                 v = json.load(f)
             if "/channels/" in root:
-                channelid = v["uploader_id"]
+                channelid = v.get("uploader_id",v["channel_id"])
                 if not channelid in channels:
                     channels[channelid] = {
                         "name": "",
@@ -257,8 +257,8 @@ for root, subdirs, files in os.walk(ytpath):
                             title=html.escape(v['title']),
                             description=html.escape(v['description']).replace('\n','<br>'),
                             views=v['view_count'],
-                            uploader_url=(f'{webpath}channels/' + v['uploader_id'] + f'{htmlext}' if '/channels/' in root else f'{webpath}channels/other{htmlext}'),
-                            uploader_id=v['uploader_id'],
+                            uploader_url=(f'{webpath}channels/' + v.get("uploader_id",v["channel_id"]) + f'{htmlext}' if '/channels/' in root else f'{webpath}channels/other{htmlext}'),
+                            uploader_id=v.get("uploader_id",v["channel_id"]),
                             uploader=html.escape(v['uploader']),
                             date=f"{v['upload_date'][:4]}-{v['upload_date'][4:6]}-{v['upload_date'][6:]}",
                             video=urllib.parse.quote(mp4path),
