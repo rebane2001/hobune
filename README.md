@@ -11,10 +11,10 @@ A lightweight static HTML framework for self-hosting video archives.
 - Client-side search
 
 # Usage
-1. Clone this repo
-2. Open up `hobune.py` and edit the `ytpath`, `ytpathweb`, `webpath`, `outpath` and `removedvideosfile` variables
-3. Run `python3 hobune.py`, this will generate HTML files in your `outpath`
-4. (optionally) Configure your webserver to allow downloads from /dl URLs and HTML pages without extensions
+1. Clone this repo (or download as zip).
+2. Rename the `default.json` file to `config.json` and edit the `ytpath`, `ytpathweb`, `webpath`, `outpath` and `removedvideosfile` variables to suit your setup.
+3. Run `python3 hobune.py`, this will generate HTML files in your `outpath`.
+4. (optionally) Configure your webserver to allow downloads from /dl URLs and HTML pages without extensions.
 
 ```
 # nginx sample config
