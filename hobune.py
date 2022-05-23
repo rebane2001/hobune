@@ -331,7 +331,7 @@ for custompage in os.listdir('custom'):
 with open(os.path.join(outpath,f"index.html"),"w") as f:
     f.write(templates["base"].format(title="Home",meta=genMeta(
             {
-                "description": "{sitename} - archive"
+                "description": f"{sitename} - archive"
             }
         ),content=templates["index"].replace("{sitename}",sitename)))
 
