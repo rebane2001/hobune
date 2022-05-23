@@ -278,6 +278,13 @@ for root, subdirs, files in os.walk(ytpath):
         except Exception as e:
             print(f"Error processing {file}", e)
 
+def get_channel_note(channel):
+    note_path = f"note/{channel}".replace(".", "_")
+    if not os.path.isfile(note_path):
+        return ""
+    with open(note_path, "r") as f:
+        return f.read()
+
 # Create channel pages
 print("Creating channel pages")
 channelindex = ""
@@ -317,6 +324,7 @@ for channel in channels:
             }
         ),content=templates["channel"].format(
                 channel=html.escape(channels[channel]['name']),
+                note=get_channel_note(channel),
                 cards=cards
             )))
 with open(os.path.join(outpath,f"channels/index.html"),"w") as f:
