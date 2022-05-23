@@ -334,6 +334,7 @@ with open(os.path.join(outpath,f"channels/index.html"),"w") as f:
             }
         ),content=templates["channel"].format(
                 channel="Channels",
+                note="",
                 cards=channelindex
             )))
 
