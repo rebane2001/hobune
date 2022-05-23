@@ -1,9 +1,9 @@
 # Hobune
-A lightweight static HTML framework for self-hosting video archives.
+A lightweight static HTML generator for self-hosting yt-dlp video archives.
   
 # Features
 - Static HTML (fast and secure)
-- Parses youtube-dl info.json format
+- Parses yt-dlp info.json format
 - Channel pages (with thumbnails)
 - Watch page (with stats, description etc)
 - Download buttons (video, description, thumbnail, subtitles)
