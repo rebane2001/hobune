@@ -86,8 +86,13 @@ for root, subdirs, files in os.walk(ytpath):
         try:
             with open(os.path.join(root,file),"r") as f:
                 v = json.load(f)
+            # Skip channel/playlist info.json files
+            if v.get("_type") == "playlist" or (len(v["id"]) == 24 and v.get("extractor") == "youtube:tab"):
+                continue
             if "/channels/" in root:
-                channelid = v.get("uploader_id",v["channel_id"])
+                channelid = v.get("uploader_id",v.get("channel_id"))
+                if not channelid:
+                    raise KeyError("uploader_id nor channel_id found")
                 if not channelid in channels:
                     channels[channelid] = {
                         "name": "",
@@ -113,8 +118,8 @@ for root, subdirs, files in os.walk(ytpath):
                 ["title","id","custom_thumbnail","view_count","upload_date","removed"]
             ]
             channels[channelid]["videos"].append(v)
-        except:
-            print(f"Error processing {file}")
+        except Exception as e:
+            print(f"Error processing {file}", e)
 
 # Add channels to main navbar dropdown (but only if less than 25, otherwise the dropdown menu gets too long)
 if len(channels) < 25:
@@ -144,7 +149,7 @@ custompageshtml = ""
 # Creating links to custom pages
 for custompage in os.listdir('custom'):
     custompage = os.path.splitext(custompage)[0]
-    custompageshtml += f'<a href="{webpath}{custompage}{htmlext}" class="item right">{custompage}</a>'
+    custompageshtml += f'<a href="{webpath}{custompage}{htmlext}" class="{"item right" if len(custompageshtml) == 0 else "item"}">{custompage}</a>'
 
 templates["base"] = templates["base"].replace("{channels}",channelshtml).replace("{custompages}",custompageshtml).replace("{webpath}",webpath).replace("{sitename}",sitename)
 
@@ -157,6 +162,9 @@ for root, subdirs, files in os.walk(ytpath):
         try:
             with open(os.path.join(root,file),"r") as f:
                 v = json.load(f)
+            # Skip channel/playlist info.json files
+            if v.get("_type") == "playlist" or (len(v["id"]) == 24 and v.get("extractor") == "youtube:tab"):
+                continue
             # Set mp4 path
             mp4path = f"{os.path.join(ytpathweb + root[len(ytpath):], file[:-len('.info.json')])}.mp4"
             for ext in ["mp4","webm","mkv"]:
@@ -257,8 +265,8 @@ for root, subdirs, files in os.walk(ytpath):
                             title=html.escape(v['title']),
                             description=html.escape(v['description']).replace('\n','<br>'),
                             views=v['view_count'],
-                            uploader_url=(f'{webpath}channels/' + v.get("uploader_id",v["channel_id"]) + f'{htmlext}' if '/channels/' in root else f'{webpath}channels/other{htmlext}'),
-                            uploader_id=v.get("uploader_id",v["channel_id"]),
+                            uploader_url=(f'{webpath}channels/' + v.get("uploader_id",v.get("channel_id")) + f'{htmlext}' if '/channels/' in root else f'{webpath}channels/other{htmlext}'),
+                            uploader_id=v.get("uploader_id",v.get("channel_id")),
                             uploader=html.escape(v['uploader']),
                             date=f"{v['upload_date'][:4]}-{v['upload_date'][4:6]}-{v['upload_date'][6:]}",
                             video=urllib.parse.quote(mp4path),
@@ -267,8 +275,8 @@ for root, subdirs, files in os.walk(ytpath):
                         )
                     )
                 )
-        except:
-            print(f"Error processing {file}")
+        except Exception as e:
+            print(f"Error processing {file}", e)
 
 # Create channel pages
 print("Creating channel pages")
