@@ -4,5 +4,6 @@
   "ytpathweb": "/files/",
   "webpath": "/",
   "outpath": "/var/www/html/",
-  "removedvideosfile": ""
+  "removedvideosfile": "",
+  "unlistedvideosfile": ""
 }

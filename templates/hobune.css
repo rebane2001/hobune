@@ -24,6 +24,14 @@
   background-color: #ffb4df!important;
 }
 
+.unlistedvideo {
+    background-color: #fff1b4!important;
+}
+
+.removedvideo.unlistedvideo {
+    background-color: #ffa1a1!important;
+}
+
 .thumbnail {
   min-height: min(12.6vw, 200px);
 }

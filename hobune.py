@@ -24,6 +24,8 @@ else:
         outpath = configfile["outpath"] # "/var/www/html/"
         # Removed videos file - each line ends with the video ID of a removed video to "tag" it (optional)
         removedvideosfile = configfile["removedvideosfile"] # ""
+        # Unlisted videos file - similar to removed videos file (optional)
+        unlistedvideosfile = configfile["unlistedvideosfile"] # ""
 
 
 # Add slashes to paths if they are missing
@@ -41,8 +43,16 @@ removedvideos = []
 if not removedvideosfile == "":
     with open(removedvideosfile, "r") as f:
         for l in f:
-            if len(l) > 11:
-                removedvideos.append(l[-12:-1])
+            if len(l.strip()) >= 11:
+                removedvideos.append(l.strip()[-11:])
+
+# Generate unlisted videos list
+unlistedvideos = []
+if not unlistedvideosfile == "":
+    with open(unlistedvideosfile, "r") as f:
+        for l in f:
+            if len(l.strip()) >= 11:
+                unlistedvideos.append(l.strip()[-11:])
 
 # Load html templates into memory
 templates = {}
@@ -98,6 +108,7 @@ for root, subdirs, files in os.walk(ytpath):
                         "name": "",
                         "date": 0,
                         "removed": 0,
+                        "unlisted": 0,
                         "videos": []
                     }
                 if channels[channelid]["date"] < int(v["upload_date"]):
@@ -113,9 +124,13 @@ for root, subdirs, files in os.walk(ytpath):
             v["removed"] = (v["id"] in removedvideos)
             if v["removed"]:
                 channels[channelid]["removed"] += 1
+            # Tag video if unlisted
+            v["unlisted"] = (v["id"] in unlistedvideos)
+            if v["unlisted"]:
+                channels[channelid]["unlisted"] += 1
             # Remove unnecessary keys to prevent memory exhaustion on big archives
             [v.pop(k) for k in list(v.keys()) if not k in 
-                ["title","id","custom_thumbnail","view_count","upload_date","removed"]
+                ["title","id","custom_thumbnail","view_count","upload_date","removed","unlisted"]
             ]
             channels[channelid]["videos"].append(v)
         except Exception as e:
@@ -296,7 +311,7 @@ for channel in channels:
                                 <div class="header">{html.escape(channels[channel]['name'])}</div>
                                 <div class="meta">{channel}</div>
                                 <div class="description">
-                                    {len(channels[channel]['videos'])} videos{' (' + str(channels[channel]['removed']) + ' removed)' if channels[channel]['removed'] > 0 else ''}
+                                    {len(channels[channel]['videos'])} videos{' (' + str(channels[channel]['removed']) + ' removed)' if channels[channel]['removed'] > 0 else ''}{' (' + str(channels[channel]['unlisted']) + ' unlisted)' if channels[channel]['unlisted'] > 0 else ''}
                                 </div>
                             </div>
                         </a>
@@ -311,7 +326,7 @@ for channel in channels:
                   <div class="image thumbnail">
                         <img loading="lazy" src="{urllib.parse.quote(v['custom_thumbnail'])}">
                   </div>
-                  <div class="content{' removedvideo' if v["removed"] else ''}">
+                  <div class="content{' removedvideo' if v["removed"] else ''}{' unlistedvideo' if v["unlisted"] else ''}">
                     <h3 class="header">{html.escape(v['title'])}</h3>
                     <p>{v['view_count']} views, {v['upload_date'][:4]}-{v['upload_date'][4:6]}-{v['upload_date'][6:]}</p>
                   </div>
