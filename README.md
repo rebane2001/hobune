@@ -31,3 +31,8 @@ location /dl {
 ```
 
 It is also recommended to edit the python script to suit your exact needs, since your setup probably won't be 1:1 same as the expected one.
+
+# Notes (2022)
+This codebase is a bit of a mess at the moment and I need to clean it up and refactor it at some point. Windows is not supported without code changes, although it can be made to work.
+
+I've also added my comments code to this repo in an unorganized fashion. It is disabled by default, if you'd like to use it please read the contents of `comments.py`.

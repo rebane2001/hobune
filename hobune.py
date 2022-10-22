@@ -3,6 +3,7 @@ import shutil
 import html
 import json
 import os
+from comments import getCommentsHTML
 
 # If config doesn't exist, create one
 if not os.path.exists("config.json"):
@@ -180,6 +181,18 @@ for root, subdirs, files in os.walk(ytpath):
             # Skip channel/playlist info.json files
             if v.get("_type") == "playlist" or (len(v["id"]) == 24 and v.get("extractor") == "youtube:tab"):
                 continue
+            # Generate comments
+            comments_html, comments_count = getCommentsHTML(html.escape(v['title']), v['id'])
+            comments_link = ""
+            if comments_html:
+                with open(os.path.join(outpath,f"comments/{v['id']}.html"),"w") as f:
+                    f.write(templates["base"].format(title=html.escape(v['title'] + ' - Comments'),meta=genMeta(
+                        {
+                            "description": v['description'][:256],
+                            "author": v['uploader']
+                        }
+                    ),content=comments_html))
+                comments_link = f'<h3 class="ui small header" style="margin: 0;"><a href="/comments/{v["id"]}">View comments ({comments_count})</a></h3>'
             # Set mp4 path
             mp4path = f"{os.path.join(ytpathweb + root[len(ytpath):], file[:-len('.info.json')])}.mp4"
             for ext in ["mp4","webm","mkv"]:
@@ -286,7 +299,8 @@ for root, subdirs, files in os.walk(ytpath):
                             date=f"{v['upload_date'][:4]}-{v['upload_date'][4:6]}-{v['upload_date'][6:]}",
                             video=urllib.parse.quote(mp4path),
                             thumbnail=urllib.parse.quote(thumbnail),
-                            download=downloadbtn
+                            download=downloadbtn,
+                            comments=comments_link
                         )
                     )
                 )

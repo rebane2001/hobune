@@ -35,3 +35,15 @@
 .thumbnail {
   min-height: min(12.6vw, 200px);
 }
+
+.comment p {
+    margin-bottom: 0;
+}
+
+.comment .reply {
+    margin-left: 24px;
+}
+
+.comment, .reply {
+    margin-bottom: 10px;
+}
