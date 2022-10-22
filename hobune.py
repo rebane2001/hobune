@@ -39,20 +39,20 @@ if not outpath[-1] == "/":
     outpath += "/"
 
 # Generate removed videos list
-removedvideos = []
+removedvideos = set()
 if len(removedvideosfile):
     with open(removedvideosfile, "r") as f:
         for l in f:
             if len(l.strip()) >= 11:
-                removedvideos.append(l.strip()[-11:])
+                removedvideos.add(l.strip()[-11:])
 
 # Generate unlisted videos list
-unlistedvideos = []
+unlistedvideos = set()
 if len(unlistedvideosfile):
     with open(unlistedvideosfile, "r") as f:
         for l in f:
             if len(l.strip()) >= 11:
-                unlistedvideos.append(l.strip()[-11:])
+                unlistedvideos.add(l.strip()[-11:])
 
 # Load html templates into memory
 templates = {}
