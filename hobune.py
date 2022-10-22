@@ -23,9 +23,9 @@ else:
         # Where HTML files will be saved
         outpath = configfile["outpath"] # "/var/www/html/"
         # Removed videos file - each line ends with the video ID of a removed video to "tag" it (optional)
-        removedvideosfile = configfile["removedvideosfile"] # ""
+        removedvideosfile = configfile.get("removedvideosfile", "")
         # Unlisted videos file - similar to removed videos file (optional)
-        unlistedvideosfile = configfile["unlistedvideosfile"] # ""
+        unlistedvideosfile = configfile.get("unlistedvideosfile", "")
 
 
 # Add slashes to paths if they are missing
@@ -40,7 +40,7 @@ if not outpath[-1] == "/":
 
 # Generate removed videos list
 removedvideos = []
-if not removedvideosfile == "":
+if len(removedvideosfile):
     with open(removedvideosfile, "r") as f:
         for l in f:
             if len(l.strip()) >= 11:
@@ -48,7 +48,7 @@ if not removedvideosfile == "":
 
 # Generate unlisted videos list
 unlistedvideos = []
-if not unlistedvideosfile == "":
+if len(unlistedvideosfile):
     with open(unlistedvideosfile, "r") as f:
         for l in f:
             if len(l.strip()) >= 11:
