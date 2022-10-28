@@ -73,6 +73,7 @@ channels = {
         "name": "Other videos",
         "date": -1,
         "removed": 0,
+        "unlisted": 0,
         "videos": []
     }
 }
