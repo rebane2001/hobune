@@ -89,6 +89,14 @@ def genMeta(meta):
         h += f'<meta name="{m}" content="{html.escape(meta[m])}">'
     return h
 
+# Get uploader id from video object
+def getUploaderId(v):
+    channelid = v.get("uploader_id", v.get("channel_id"))
+    # Do not use @handles if possible
+    if isinstance(channelid, str) and channelid[0] == "@":
+        channelid = v.get("channel_id", channelid)
+    return channelid
+
 # Populate channels list
 print("Populating channels list")
 for root, subdirs, files in os.walk(ytpath):
@@ -102,7 +110,7 @@ for root, subdirs, files in os.walk(ytpath):
             if v.get("_type") == "playlist" or (len(v["id"]) == 24 and v.get("extractor") == "youtube:tab"):
                 continue
             if "/channels/" in root:
-                channelid = v.get("uploader_id",v.get("channel_id"))
+                channelid = getUploaderId(v)
                 if not channelid:
                     raise KeyError("uploader_id nor channel_id found")
                 if not channelid in channels:
@@ -294,8 +302,8 @@ for root, subdirs, files in os.walk(ytpath):
                             title=html.escape(v['title']),
                             description=html.escape(v['description']).replace('\n','<br>'),
                             views=v['view_count'],
-                            uploader_url=(f'{webpath}channels/' + v.get("uploader_id",v.get("channel_id")) + f'{htmlext}' if '/channels/' in root else f'{webpath}channels/other{htmlext}'),
-                            uploader_id=v.get("uploader_id",v.get("channel_id")),
+                            uploader_url=(f'{webpath}channels/' + getUploaderId(v) + f'{htmlext}' if '/channels/' in root else f'{webpath}channels/other{htmlext}'),
+                            uploader_id=getUploaderId(v),
                             uploader=html.escape(v['uploader']),
                             date=f"{v['upload_date'][:4]}-{v['upload_date'][4:6]}-{v['upload_date'][6:]}",
                             video=urllib.parse.quote(mp4path),
