@@ -5,9 +5,9 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.6/dist/semantic.min.css">
     <script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.6/dist/semantic.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="{webpath}hobune.css">
-    <script src="{webpath}hobune.js"></script>
-    <title>{title} - {sitename}</title>
+    <link rel="stylesheet" type="text/css" href="{config.web_root}hobune.css">
+    <script src="{config.web_root}hobune.js"></script>
+    <title>{title} - {config.site_name}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta charset="UTF-8">
     {meta}
@@ -15,8 +15,8 @@
   <body>
     <div class="ui fixed inverted menu">
       <div class="ui container">
-        <a href="{webpath}" class="header item">
-          {sitename}
+        <a href="{config.web_root}" class="header item">
+          {config.site_name}
         </a>
         {channels}
         {custompages}

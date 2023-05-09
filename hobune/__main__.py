@@ -5,52 +5,27 @@ import json
 import os
 from comments import getCommentsHTML
 
-# If config doesn't exist, create one
-if not os.path.exists("config.json"):
-    shutil.copy("default.json", "config.json")
-    print("Created config.json, please set it up and re-run Hobune")
+from hobune.config import load_config
+
+# TODO: Remove
+os.chdir("..")
+
+config = load_config()
+if not config:
     exit()
-else:
-    with open("config.json","r") as f:
-        configfile = json.load(f)
-        # Name/Title of the site (eg will be shown on homepages)
-        sitename = configfile["sitename"] # "Hobune"
-        # Location of the video files (local)
-        ytpath = configfile["ytpath"] # "/var/www/html/files/"
-        # Location of the video files (public), could be something like https://example.com/files/ as well
-        ytpathweb = configfile["ytpathweb"] # "/files/"
-        # Location of the website root (public), could be something like https://example.com/hobune/ as well
-        webpath = configfile["webpath"] # "/"
-        # Where HTML files will be saved
-        outpath = configfile["outpath"] # "/var/www/html/"
-        # Removed videos file - each line ends with the video ID of a removed video to "tag" it (optional)
-        removedvideosfile = configfile.get("removedvideosfile", "")
-        # Unlisted videos file - similar to removed videos file (optional)
-        unlistedvideosfile = configfile.get("unlistedvideosfile", "")
-
-
-# Add slashes to paths if they are missing
-if not ytpath[-1] == "/":
-    ytpath += "/"
-if not ytpathweb[-1] == "/":
-    ytpathweb += "/"
-if not webpath[-1] == "/":
-    webpath += "/"
-if not outpath[-1] == "/":
-    outpath += "/"
 
 # Generate removed videos list
 removedvideos = set()
-if len(removedvideosfile):
-    with open(removedvideosfile, "r") as f:
+if len(config.removed_videos_file):
+    with open(config.removed_videos_file, "r") as f:
         for l in f:
             if len(l.strip()) >= 11:
                 removedvideos.add(l.strip()[-11:])
 
 # Generate unlisted videos list
 unlistedvideos = set()
-if len(unlistedvideosfile):
-    with open(unlistedvideosfile, "r") as f:
+if len(config.unlisted_videos_file):
+    with open(config.unlisted_videos_file, "r") as f:
         for l in f:
             if len(l.strip()) >= 11:
                 unlistedvideos.add(l.strip()[-11:])
@@ -59,17 +34,17 @@ if len(unlistedvideosfile):
 templates = {}
 for template in os.listdir('templates'):
     if template.endswith(".html"):
-        with open(os.path.join('templates',template),"r") as f:
+        with open(os.path.join('templates', template), "r") as f:
             templates[template[:-len(".html")]] = f.read()
 
 # Create folders
 for folder in ["channels", "videos", "comments"]:
-    os.makedirs(os.path.join(outpath, folder), exist_ok=True)
+    os.makedirs(os.path.join(config.output_path, folder), exist_ok=True)
 
 # Copy assets
-shutil.copy("templates/hobune.css",outpath)
-shutil.copy("templates/hobune.js",outpath)
-shutil.copy("templates/favicon.ico",outpath)
+shutil.copy("templates/hobune.css", config.output_path)
+shutil.copy("templates/hobune.js", config.output_path)
+shutil.copy("templates/favicon.ico", config.output_path)
 
 # Initialize channels list
 channels = {
@@ -104,7 +79,7 @@ def getUploaderId(v):
 
 # Populate channels list
 print("Populating channels list")
-for root, subdirs, files in os.walk(ytpath):
+for root, subdirs, files in os.walk(config.files_path):
     #sort videos by date
     files.sort(reverse = True)
     for file in (file for file in files if file.endswith(".info.json")):
@@ -134,7 +109,7 @@ for root, subdirs, files in os.walk(ytpath):
             v["custom_thumbnail"] = "/default.png"
             for ext in ["webp","jpg","png"]:
                 if os.path.exists(x := os.path.join(root,file)[:-len('.info.json')] + f".{ext}"):
-                    v["custom_thumbnail"] = ytpathweb + x[len(ytpath):]
+                    v["custom_thumbnail"] = config.files_web_path + x[len(config.files_path):]
             # Tag video if removed
             v["removed"] = (v["id"] in removedvideos)
             if v["removed"]:
@@ -156,13 +131,13 @@ if len(channels) < 25:
     dropdownhtml = ""
     for channel in channels:
         if not channel == "other":
-            dropdownhtml += f'<a class="item" href="{webpath}channels/{channel}{htmlext}">{html.escape(channels[channel]["name"])}</a>'
+            dropdownhtml += f'<a class="item" href="{config.web_root}channels/{channel}{htmlext}">{html.escape(channels[channel]["name"])}</a>'
     channelshtml = f'''
             <div class="ui simple dropdown item">
-            <a href="{webpath}channels">Channels</a> <i class="dropdown icon"></i>
+            <a href="{config.web_root}channels">Channels</a> <i class="dropdown icon"></i>
             <div class="menu">
                 <!-- <a class="item" href="/channels/other.html">Other videos</a> -->
-                <a class="item" href="{webpath}channels/other">Other videos</a>
+                <a class="item" href="{config.web_root}channels/other">Other videos</a>
                 <div class="divider"></div>
                 {dropdownhtml}
             </div>
@@ -170,7 +145,7 @@ if len(channels) < 25:
     '''
 else:
     channelshtml = f'''
-        <a href="{webpath}" class="item">
+        <a href="{config.web_root}" class="item">
           Channels
         </a>
     '''
@@ -179,14 +154,14 @@ custompageshtml = ""
 # Creating links to custom pages
 for custompage in os.listdir('custom'):
     custompage = os.path.splitext(custompage)[0]
-    custompageshtml += f'<a href="{webpath}{custompage}{htmlext}" class="{"item right" if len(custompageshtml) == 0 else "item"}">{custompage}</a>'
+    custompageshtml += f'<a href="{config.web_root}{custompage}{htmlext}" class="{"item right" if len(custompageshtml) == 0 else "item"}">{custompage}</a>'
 
-templates["base"] = templates["base"].replace("{channels}",channelshtml).replace("{custompages}",custompageshtml).replace("{webpath}",webpath).replace("{sitename}",sitename)
+templates["base"] = templates["base"].replace("{channels}",channelshtml).replace("{custompages}",custompageshtml).replace("{config.web_root}",config.web_root).replace("{config.site_name}",config.site_name)
 
 
 
 # Create video pages
-for root, subdirs, files in os.walk(ytpath):
+for root, subdirs, files in os.walk(config.files_path):
     print("Creating video pages for",root)
     for file in (file for file in files if file.endswith(".info.json")):
         try:
@@ -199,7 +174,7 @@ for root, subdirs, files in os.walk(ytpath):
             comments_html, comments_count = getCommentsHTML(html.escape(v['title']), v['id'])
             comments_link = ""
             if comments_html:
-                with open(os.path.join(outpath,f"comments/{v['id']}.html"),"w") as f:
+                with open(os.path.join(config.output_path,f"comments/{v['id']}.html"),"w") as f:
                     f.write(templates["base"].format(title=html.escape(v['title'] + ' - Comments'),meta=genMeta(
                         {
                             "description": v['description'][:256],
@@ -208,17 +183,17 @@ for root, subdirs, files in os.walk(ytpath):
                     ),content=comments_html))
                 comments_link = f'<h3 class="ui small header" style="margin: 0;"><a href="/comments/{v["id"]}">View comments ({comments_count})</a></h3>'
             # Set mp4 path
-            mp4path = f"{os.path.join(ytpathweb + root[len(ytpath):], file[:-len('.info.json')])}.mp4"
+            mp4path = f"{os.path.join(config.files_web_path + root[len(config.files_path):], file[:-len('.info.json')])}.mp4"
             for ext in ["mp4","webm","mkv"]:
                 if os.path.exists(altpath := os.path.join(root,file)[:-len('.info.json')] + f".{ext}"):
-                    mp4path = f"{os.path.join(ytpathweb + root[len(ytpath):], file[:-len('.info.json')])}.{ext}"
+                    mp4path = f"{os.path.join(config.files_web_path + root[len(config.files_path):], file[:-len('.info.json')])}.{ext}"
                     break
     
             # Get thumbnail path
             thumbnail = "/default.png"
             for ext in ["webp","jpg","png"]:
                 if os.path.exists(x := os.path.join(root,file)[:-len('.info.json')] + f".{ext}"):
-                    thumbnail = ytpathweb + x[len(ytpath):]
+                    thumbnail = config.files_web_path + x[len(config.files_path):]
     
             # Create a download button for the video
             downloadbtn = f"""
@@ -247,7 +222,7 @@ for root, subdirs, files in os.walk(ytpath):
                             <a class="ui basic right pointing label">
                                 4K/{ext}
                             </a>
-                            <a href="/dl{urllib.parse.quote(ytpathweb + altpath[len(ytpath):])}">
+                            <a href="/dl{urllib.parse.quote(config.files_web_path + altpath[len(config.files_path):])}">
                                 <div class="ui button">
                                     <i class="download icon"></i> Download video
                                 </div>
@@ -259,7 +234,7 @@ for root, subdirs, files in os.walk(ytpath):
             if os.path.exists(descfile := os.path.join(root,file)[:-len('.info.json')] + f".description"):
                 downloadbtn += f"""
                     <br>
-                    <a href="/dl{urllib.parse.quote(ytpathweb + descfile[len(ytpath):])}">
+                    <a href="/dl{urllib.parse.quote(config.files_web_path + descfile[len(config.files_path):])}">
                         <div class="ui button downloadbtn">
                             <i class="download icon"></i> Description
                         </div>
@@ -286,7 +261,7 @@ for root, subdirs, files in os.walk(ytpath):
                             <a class="ui basic right pointing label">
                                 {vtt[len(file[:-len('.info.json')])+1:-len('.vtt')]}
                             </a>
-                            <a href="/dl{urllib.parse.quote(os.path.join(ytpathweb + root[len(ytpath):], vtt))}">
+                            <a href="/dl{urllib.parse.quote(os.path.join(config.files_web_path + root[len(config.files_path):], vtt))}">
                                 <div class="ui button">
                                     <i class="download icon"></i> Subtitles
                                 </div>
@@ -295,7 +270,7 @@ for root, subdirs, files in os.walk(ytpath):
                     """
     
             # Create HTML
-            with open(os.path.join(outpath,f"videos/{v['id']}.html"),"w") as f:
+            with open(os.path.join(config.output_path,f"videos/{v['id']}.html"),"w") as f:
                 f.write(
                     templates["base"].format(title=html.escape(v['title']),meta=genMeta(
                         {
@@ -307,7 +282,7 @@ for root, subdirs, files in os.walk(ytpath):
                             title=html.escape(v['title']),
                             description=html.escape(v['description']).replace('\n','<br>'),
                             views=v['view_count'],
-                            uploader_url=(f'{webpath}channels/' + getUploaderId(v) + f'{htmlext}' if '/channels/' in root else f'{webpath}channels/other{htmlext}'),
+                            uploader_url=(f'{config.web_root}channels/' + getUploaderId(v) + f'{htmlext}' if '/channels/' in root else f'{config.web_root}channels/other{htmlext}'),
                             uploader_id=getUploaderId(v),
                             uploader=html.escape(v['uploader']),
                             date=f"{v['upload_date'][:4]}-{v['upload_date'][4:6]}-{v['upload_date'][6:]}",
@@ -334,7 +309,7 @@ channelindex = ""
 for channel in channels:
     channelindex += f"""
                     <div class="column searchable" data-name="{html.escape(channels[channel]['name'])}">
-                        <a href="{webpath}channels/{channel}{htmlext}" class="ui card">
+                        <a href="{config.web_root}channels/{channel}{htmlext}" class="ui card">
                             <div class="content">
                                 <div class="header">{html.escape(channels[channel]['name'])}</div>
                                 <div class="meta">{channel}</div>
@@ -345,12 +320,12 @@ for channel in channels:
                         </a>
                     </div>
                 """
-    with open(os.path.join(outpath,f"channels/{channel}.html"),"w") as f:
+    with open(os.path.join(config.output_path,f"channels/{channel}.html"),"w") as f:
         cards = ""
         for v in channels[channel]["videos"]:
             cards += f"""
             <div class="column searchable" data-name="{html.escape(v['title'])}">
-                <a href="{webpath}videos/{v['id']}{htmlext}" class="ui fluid card">
+                <a href="{config.web_root}videos/{v['id']}{htmlext}" class="ui fluid card">
                   <div class="image thumbnail">
                         <img loading="lazy" src="{urllib.parse.quote(v['custom_thumbnail'])}">
                   </div>
@@ -370,7 +345,7 @@ for channel in channels:
                 note=get_channel_note(channel),
                 cards=cards
             )))
-with open(os.path.join(outpath,f"channels/index.html"),"w") as f:
+with open(os.path.join(config.output_path,f"channels/index.html"),"w") as f:
     f.write(templates["base"].format(title="Channels",meta=genMeta(
             {
                 "description": "Archived channels"
@@ -386,13 +361,13 @@ print("Writing other pages")
 for custompage in os.listdir('custom'):
     with open(f"custom/{custompage}", "r") as custompagef:
         custompage = os.path.splitext(custompage)[0]
-        with open(os.path.join(outpath,f"{custompage}.html"),"w") as f:
+        with open(os.path.join(config.output_path,f"{custompage}.html"),"w") as f:
             f.write(templates["base"].format(title=custompage,meta="",content=custompagef.read()))
-with open(os.path.join(outpath,f"index.html"),"w") as f:
+with open(os.path.join(config.output_path,f"index.html"),"w") as f:
     f.write(templates["base"].format(title="Home",meta=genMeta(
             {
-                "description": f"{sitename} - archive"
+                "description": f"{config.site_name} - archive"
             }
-        ),content=templates["index"].replace("{sitename}",sitename)))
+        ),content=templates["index"].replace("{config.site_name}",config.site_name)))
 
 print("Done")
