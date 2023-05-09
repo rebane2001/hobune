@@ -38,17 +38,19 @@ def create_video_pages(config, channels, templates):
             try:
                 with open(os.path.join(root, file), "r") as f:
                     v = json.load(f)
+                page_meta = generate_meta_tags(
+                    {
+                        "description": v['description'][:256],
+                        "author": v['uploader']
+                    }
+                )
                 # Generate comments
                 comments_html, comments_count = getCommentsHTML(html.escape(v['title']), v['id'])
                 comments_link = ""
                 if comments_html:
                     with open(os.path.join(config.output_path, f"comments/{v['id']}.html"), "w") as f:
-                        f.write(templates["base"].format(title=html.escape(v['title'] + ' - Comments'), meta=generate_meta_tags(
-                            {
-                                "description": v['description'][:256],
-                                "author": v['uploader']
-                            }
-                        ), content=comments_html))
+                        f.write(templates["base"].format(title=html.escape(v['title'] + ' - Comments'), meta=page_meta,
+                                                         content=comments_html))
                     comments_link = f'<h3 class="ui small header" style="margin: 0;"><a href="/comments/{v["id"]}">View comments ({comments_count})</a></h3>'
                 # Set mp4 path
                 mp4path = f"{os.path.join(config.files_web_path + root[len(config.files_path):], base)}.mp4"
@@ -61,7 +63,8 @@ def create_video_pages(config, channels, templates):
                 thumbnail = "/default.png"
                 for ext in ["webp", "jpg", "png"]:
                     if (thumbnail_file := f"{base}.{ext}") in files:
-                        thumbnail = config.files_web_path + (os.path.join(root, thumbnail_file))[len(config.files_path):]
+                        thumbnail = config.files_web_path + (os.path.join(root, thumbnail_file))[
+                                                            len(config.files_path):]
 
                 # Create a download button for the video
                 download_buttons_html = generate_download_button("Download video", mp4path)
@@ -110,15 +113,7 @@ def create_video_pages(config, channels, templates):
                 )
 
                 with open(os.path.join(config.output_path, f"videos/{v['id']}.html"), "w") as f:
-                    f.write(
-                        templates["base"].format(title=html.escape(v['title']), meta=generate_meta_tags(
-                            {
-                                "description": v['description'][:256],
-                                "author": v['uploader']
-                            }
-                        ), content=page_html
-                                                 )
-                    )
+                    f.write(templates["base"].format(title=html.escape(v['title']), meta=page_meta, content=page_html))
             except Exception as e:
                 logger.error(f"Error processing {file}")
                 print(e)
