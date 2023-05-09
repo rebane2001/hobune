@@ -19,3 +19,4 @@ Hobune needs a few changes made and I think it might be best to create a "v2" fo
 - Comments page should show comments count (both top-level and all)
 - Link back to YouTube links whereever possible
 - Make it easier to download everything, eg provide a wget command (maybe we could even download and generate a zip in JS for smaller channels?)
+- Support generating comments even if video itself isn't present

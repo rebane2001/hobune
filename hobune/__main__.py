@@ -10,7 +10,7 @@ from comments import getCommentsHTML
 from hobune.channels import is_full_channel, initialize_channels
 from hobune.logger import logger
 from hobune.config import load_config
-from hobune.util import generate_meta_tags
+from hobune.util import generate_meta_tags, quote_url
 from hobune.videos import create_video_pages
 
 # TODO: Remove
@@ -145,7 +145,7 @@ for channel in channels:
             <div class="column searchable" data-name="{html.escape(v['title'])}">
                 <a href="{config.web_root}videos/{v['id']}{html_ext}" class="ui fluid card">
                   <div class="image thumbnail">
-                        <img loading="lazy" src="{urllib.parse.quote(v['custom_thumbnail'])}">
+                        <img loading="lazy" src="{quote_url(v['custom_thumbnail'])}">
                   </div>
                   <div class="content{' removedvideo' if v["removed"] else ''}{' unlistedvideo' if v["unlisted"] else ''}">
                     <h3 class="header">{html.escape(v['title'])}</h3>
