@@ -10,6 +10,8 @@ from comments import getCommentsHTML
 from hobune.channels import is_full_channel, initialize_channels
 from hobune.logger import logger
 from hobune.config import load_config
+from hobune.util import generate_meta_tags
+from hobune.videos import create_video_pages
 
 # TODO: Remove
 os.chdir("..")
@@ -58,12 +60,7 @@ init_assets(config.output_path)
 html_ext = ".html" if config.add_html_ext else ""
 
 
-# Generate meta tags
-def genMeta(meta):
-    h = ""
-    for m in meta:
-        h += f'<meta name="{m}" content="{html.escape(meta[m])}">'
-    return h
+
 
 
 # Get uploader id from video object
@@ -75,7 +72,6 @@ def getUploaderId(v):
     return channelid
 
 
-# Populate channels list
 logger.info("Populating channels list")
 channels = initialize_channels(config, removed_videos, unlisted_videos)
 
@@ -112,143 +108,9 @@ templates["base"] = templates["base"].replace("{channels}", channels_html).repla
                                                                                    custompageshtml).replace(
     "{config.web_root}", config.web_root).replace("{config.site_name}", config.site_name)
 
-# Create video pages
-for root, subdirs, files in os.walk(config.files_path):
-    print("Creating video pages for", root)
-    for file in (file for file in files if file.endswith(".info.json")):
-        try:
-            with open(os.path.join(root, file), "r") as f:
-                v = json.load(f)
-            # Skip channel/playlist info.json files
-            if v.get("_type") == "playlist" or (len(v["id"]) == 24 and v.get("extractor") == "youtube:tab"):
-                continue
-            # Generate comments
-            comments_html, comments_count = getCommentsHTML(html.escape(v['title']), v['id'])
-            comments_link = ""
-            if comments_html:
-                with open(os.path.join(config.output_path, f"comments/{v['id']}.html"), "w") as f:
-                    f.write(templates["base"].format(title=html.escape(v['title'] + ' - Comments'), meta=genMeta(
-                        {
-                            "description": v['description'][:256],
-                            "author": v['uploader']
-                        }
-                    ), content=comments_html))
-                comments_link = f'<h3 class="ui small header" style="margin: 0;"><a href="/comments/{v["id"]}">View comments ({comments_count})</a></h3>'
-            # Set mp4 path
-            mp4path = f"{os.path.join(config.files_web_path + root[len(config.files_path):], file[:-len('.info.json')])}.mp4"
-            for ext in ["mp4", "webm", "mkv"]:
-                if os.path.exists(altpath := os.path.join(root, file)[:-len('.info.json')] + f".{ext}"):
-                    mp4path = f"{os.path.join(config.files_web_path + root[len(config.files_path):], file[:-len('.info.json')])}.{ext}"
-                    break
 
-            # Get thumbnail path
-            thumbnail = "/default.png"
-            for ext in ["webp", "jpg", "png"]:
-                if os.path.exists(x := os.path.join(root, file)[:-len('.info.json')] + f".{ext}"):
-                    thumbnail = config.files_web_path + x[len(config.files_path):]
-
-            # Create a download button for the video
-            downloadbtn = f"""
-                <a href="/dl{urllib.parse.quote(mp4path)}">
-                    <div class="ui button downloadbtn">
-                        <i class="download icon"></i> Download video
-                    </div>
-                </a>
-            """
-
-            # Create multiple video download buttons if we have multiple formats
-            for ext in ["webm", "mkv"]:
-                if os.path.exists(altpath := os.path.join(root, file)[:-len('.info.json')] + f".{ext}"):
-                    downloadbtn = f"""
-                        <div class="ui left labeled button downloadbtn">
-                            <a class="ui basic right pointing label">
-                                1080/mp4
-                            </a>
-                            <a href="/dl{urllib.parse.quote(mp4path)}">
-                                <div class="ui button">
-                                    <i class="download icon"></i> Download video
-                                </div>
-                            </a>
-                        </div>
-                        <div class="ui left labeled button downloadbtn">
-                            <a class="ui basic right pointing label">
-                                4K/{ext}
-                            </a>
-                            <a href="/dl{urllib.parse.quote(config.files_web_path + altpath[len(config.files_path):])}">
-                                <div class="ui button">
-                                    <i class="download icon"></i> Download video
-                                </div>
-                            </a>
-                        </div>
-                    """
-
-            # Description download
-            if os.path.exists(descfile := os.path.join(root, file)[:-len('.info.json')] + f".description"):
-                downloadbtn += f"""
-                    <br>
-                    <a href="/dl{urllib.parse.quote(config.files_web_path + descfile[len(config.files_path):])}">
-                        <div class="ui button downloadbtn">
-                            <i class="download icon"></i> Description
-                        </div>
-                    </a>
-                """
-
-            # Thumbnail download
-            if thumbnail != "/default.png":
-                downloadbtn += f"""
-                    <br>
-                    <a href="/dl{urllib.parse.quote(thumbnail)}">
-                        <div class="ui button downloadbtn">
-                            <i class="download icon"></i> Thumbnail
-                        </div>
-                    </a>
-                """
-
-            # Subtitles download
-            for vtt in (vtt for vtt in files if vtt.endswith(".vtt")):
-                if vtt.startswith(file[:-len('.info.json')]):
-                    downloadbtn += f"""
-                        <br>
-                        <div class="ui left labeled button downloadbtn">
-                            <a class="ui basic right pointing label">
-                                {vtt[len(file[:-len('.info.json')]) + 1:-len('.vtt')]}
-                            </a>
-                            <a href="/dl{urllib.parse.quote(os.path.join(config.files_web_path + root[len(config.files_path):], vtt))}">
-                                <div class="ui button">
-                                    <i class="download icon"></i> Subtitles
-                                </div>
-                            </a>
-                        </div>
-                    """
-
-            # Create HTML
-            with open(os.path.join(config.output_path, f"videos/{v['id']}.html"), "w") as f:
-                f.write(
-                    templates["base"].format(title=html.escape(v['title']), meta=genMeta(
-                        {
-                            "description": v['description'][:256],
-                            "author": v['uploader']
-                        }
-                    ), content=
-                                             templates["video"].format(
-                                                 title=html.escape(v['title']),
-                                                 description=html.escape(v['description']).replace('\n', '<br>'),
-                                                 views=v['view_count'],
-                                                 uploader_url=(f'{config.web_root}channels/' + getUploaderId(
-                                                     v) + f'{html_ext}' if is_full_channel(
-                                                     root) else f'{config.web_root}channels/other{html_ext}'),
-                                                 uploader_id=getUploaderId(v),
-                                                 uploader=html.escape(v['uploader']),
-                                                 date=f"{v['upload_date'][:4]}-{v['upload_date'][4:6]}-{v['upload_date'][6:]}",
-                                                 video=urllib.parse.quote(mp4path),
-                                                 thumbnail=urllib.parse.quote(thumbnail),
-                                                 download=downloadbtn,
-                                                 comments=comments_link
-                                             )
-                                             )
-                )
-        except Exception as e:
-            print(f"Error processing {file}", e)
+logger.info("Creating video pages")
+create_video_pages(config, channels, templates)
 
 
 def get_channel_note(channel):
@@ -292,7 +154,7 @@ for channel in channels:
                 </a>
             </div>
             """
-        f.write(templates["base"].format(title=html.escape(channels[channel].name), meta=genMeta(
+        f.write(templates["base"].format(title=html.escape(channels[channel].name), meta=generate_meta_tags(
             {
                 "description": f"{channels[channel].name}'s channel archive"
             }
@@ -302,7 +164,7 @@ for channel in channels:
             cards=cards
         )))
 with open(os.path.join(config.output_path, f"channels/index.html"), "w") as f:
-    f.write(templates["base"].format(title="Channels", meta=genMeta(
+    f.write(templates["base"].format(title="Channels", meta=generate_meta_tags(
         {
             "description": "Archived channels"
         }
@@ -320,7 +182,7 @@ for custompage in os.listdir('custom'):
         with open(os.path.join(config.output_path, f"{custompage}.html"), "w") as f:
             f.write(templates["base"].format(title=custompage, meta="", content=custompagef.read()))
 with open(os.path.join(config.output_path, f"index.html"), "w") as f:
-    f.write(templates["base"].format(title="Home", meta=genMeta(
+    f.write(templates["base"].format(title="Home", meta=generate_meta_tags(
         {
             "description": f"{config.site_name} - archive"
         }
