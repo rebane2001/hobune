@@ -2,9 +2,6 @@
 <html lang="en">
   <head>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.6/dist/semantic.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.6/dist/semantic.min.js"></script>
     <link rel="stylesheet" type="text/css" href="{config.web_root}hobune.css">
     <script src="{config.web_root}hobune.js"></script>
     <title>{title} - {config.site_name}</title>
@@ -13,14 +10,13 @@
     {meta}
   </head>
   <body>
-    <div class="ui fixed inverted menu">
-      <div class="ui container">
-        <a href="{config.web_root}" class="header item">
-          {config.site_name}
-        </a>
-        {channels}
-        {custom_pages}
-      </div>
+    <div class="header">
+      <a href="{config.web_root}" class="item primary">
+        {config.site_name}
+      </a>
+      {channels}
+      <span class="item grow"></span>
+      {custom_pages}
     </div>
     {content}
   </body>

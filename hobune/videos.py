@@ -1,10 +1,8 @@
 import html
 import json
 import os
-import urllib.parse
 
-from comments import getCommentsHTML
-from hobune.channels import is_full_channel
+from hobune.comments import getCommentsHTML
 from hobune.logger import logger
 from hobune.util import generate_meta_tags, quote_url
 

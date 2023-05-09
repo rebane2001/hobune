@@ -1,3 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
+    font-size: 14px;
+    line-height: 1.4285em;
+}
+
+a {
+    color: #4183c4;
+    text-decoration: none;
+}
+
+.header {
+    background: #1b1c1d;
+    color: white;
+    position: sticky;
+    top: 0;
+    height: 40px;
+    overflow: hidden;
+    display: flex;
+}
+
+.header .item, .header a.item {
+    color: rgba(255,255,255,.9);
+    padding: 13px 16px;
+    height: 14px;
+    display: inline-block;
+    font-weight: 400;
+    line-height: 1;
+    position: relative;
+    transition: background .1s ease,box-shadow .1s ease,color .1s ease,-webkit-box-shadow .1s ease;
+}
+
+.header .item.primary {
+    font-weight: 700;
+}
+
+.header .item:hover {
+    background-color: rgba(255,255,255,.08);
+}
+
+.header .item:before {
+    background: rgba(255,255,255,.08);
+    position: absolute;
+    content: '';
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 1px;
+}
+
+.grow {
+    flex-grow: 1;
+}
+
 .rounded {
 	border-radius: 5px; 
     overflow: hidden; 

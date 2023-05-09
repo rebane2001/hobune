@@ -27,7 +27,9 @@ def init_assets(output_path):
 
 def update_templates(config, templates, channels, html_ext):
     # Add channels to main navbar dropdown (but only if less than 25, otherwise the dropdown menu gets too long)
-    if len(channels) < 25:
+    # TODO: disable this epic
+    # if len(channels) < 25:
+    if False:
         dropdown_html = ""
         for channel in channels:
             if channel != "other":
