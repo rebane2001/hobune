@@ -14,21 +14,20 @@ config = load_config()
 if not config:
     exit()
 
-# Generate removed videos list
-removedvideos = set()
-if len(config.removed_videos_file):
-    with open(config.removed_videos_file, "r") as f:
-        for l in f:
-            if len(l.strip()) >= 11:
-                removedvideos.add(l.strip()[-11:])
 
-# Generate unlisted videos list
-unlistedvideos = set()
-if len(config.unlisted_videos_file):
-    with open(config.unlisted_videos_file, "r") as f:
-        for l in f:
-            if len(l.strip()) >= 11:
-                unlistedvideos.add(l.strip()[-11:])
+def extract_ids_from_txt(filename):
+    ids = set()
+    if len(filename):
+        with open(filename, "r") as f:
+            for l in f:
+                if len(l.strip()) >= 11:
+                    ids.add(l.strip()[-11:])
+    return ids
+
+
+# Generate removed and unlisted videos sets
+removed_videos = extract_ids_from_txt(config.removed_videos_file)
+unlisted_videos = extract_ids_from_txt(config.unlisted_videos_file)
 
 # Load html templates into memory
 templates = {}
@@ -60,7 +59,8 @@ channels = {
 # Allows you to disable .html extensions for links if you wish
 # Doesn't affect actual filenames, just links
 # TODO: change back
-htmlext = ".html"#""#".html"
+htmlext = ".html"  # ""#".html"
+
 
 # Generate meta tags
 def genMeta(meta):
@@ -68,6 +68,7 @@ def genMeta(meta):
     for m in meta:
         h += f'<meta name="{m}" content="{html.escape(meta[m])}">'
     return h
+
 
 # Get uploader id from video object
 def getUploaderId(v):
@@ -77,14 +78,15 @@ def getUploaderId(v):
         channelid = v.get("channel_id", channelid)
     return channelid
 
+
 # Populate channels list
 print("Populating channels list")
 for root, subdirs, files in os.walk(config.files_path):
-    #sort videos by date
-    files.sort(reverse = True)
+    # sort videos by date
+    files.sort(reverse=True)
     for file in (file for file in files if file.endswith(".info.json")):
         try:
-            with open(os.path.join(root,file),"r") as f:
+            with open(os.path.join(root, file), "r") as f:
                 v = json.load(f)
             # Skip channel/playlist info.json files
             if v.get("_type") == "playlist" or (len(v["id"]) == 24 and v.get("extractor") == "youtube:tab"):
@@ -107,21 +109,22 @@ for root, subdirs, files in os.walk(config.files_path):
             else:
                 channelid = "other"
             v["custom_thumbnail"] = "/default.png"
-            for ext in ["webp","jpg","png"]:
-                if os.path.exists(x := os.path.join(root,file)[:-len('.info.json')] + f".{ext}"):
+            for ext in ["webp", "jpg", "png"]:
+                if os.path.exists(x := os.path.join(root, file)[:-len('.info.json')] + f".{ext}"):
                     v["custom_thumbnail"] = config.files_web_path + x[len(config.files_path):]
             # Tag video if removed
-            v["removed"] = (v["id"] in removedvideos)
+            v["removed"] = (v["id"] in removed_videos)
             if v["removed"]:
                 channels[channelid]["removed"] += 1
             # Tag video if unlisted
-            v["unlisted"] = (v["id"] in unlistedvideos)
+            v["unlisted"] = (v["id"] in unlisted_videos)
             if v["unlisted"]:
                 channels[channelid]["unlisted"] += 1
             # Remove unnecessary keys to prevent memory exhaustion on big archives
-            [v.pop(k) for k in list(v.keys()) if not k in 
-                ["title","id","custom_thumbnail","view_count","upload_date","removed","unlisted"]
-            ]
+            [v.pop(k) for k in list(v.keys()) if not k in
+                                                     ["title", "id", "custom_thumbnail", "view_count", "upload_date",
+                                                      "removed", "unlisted"]
+             ]
             channels[channelid]["videos"].append(v)
         except Exception as e:
             print(f"Error processing {file}", e)
@@ -156,16 +159,16 @@ for custompage in os.listdir('custom'):
     custompage = os.path.splitext(custompage)[0]
     custompageshtml += f'<a href="{config.web_root}{custompage}{htmlext}" class="{"item right" if len(custompageshtml) == 0 else "item"}">{custompage}</a>'
 
-templates["base"] = templates["base"].replace("{channels}",channelshtml).replace("{custompages}",custompageshtml).replace("{config.web_root}",config.web_root).replace("{config.site_name}",config.site_name)
-
-
+templates["base"] = templates["base"].replace("{channels}", channelshtml).replace("{custompages}",
+                                                                                  custompageshtml).replace(
+    "{config.web_root}", config.web_root).replace("{config.site_name}", config.site_name)
 
 # Create video pages
 for root, subdirs, files in os.walk(config.files_path):
-    print("Creating video pages for",root)
+    print("Creating video pages for", root)
     for file in (file for file in files if file.endswith(".info.json")):
         try:
-            with open(os.path.join(root,file),"r") as f:
+            with open(os.path.join(root, file), "r") as f:
                 v = json.load(f)
             # Skip channel/playlist info.json files
             if v.get("_type") == "playlist" or (len(v["id"]) == 24 and v.get("extractor") == "youtube:tab"):
@@ -174,27 +177,27 @@ for root, subdirs, files in os.walk(config.files_path):
             comments_html, comments_count = getCommentsHTML(html.escape(v['title']), v['id'])
             comments_link = ""
             if comments_html:
-                with open(os.path.join(config.output_path,f"comments/{v['id']}.html"),"w") as f:
-                    f.write(templates["base"].format(title=html.escape(v['title'] + ' - Comments'),meta=genMeta(
+                with open(os.path.join(config.output_path, f"comments/{v['id']}.html"), "w") as f:
+                    f.write(templates["base"].format(title=html.escape(v['title'] + ' - Comments'), meta=genMeta(
                         {
                             "description": v['description'][:256],
                             "author": v['uploader']
                         }
-                    ),content=comments_html))
+                    ), content=comments_html))
                 comments_link = f'<h3 class="ui small header" style="margin: 0;"><a href="/comments/{v["id"]}">View comments ({comments_count})</a></h3>'
             # Set mp4 path
             mp4path = f"{os.path.join(config.files_web_path + root[len(config.files_path):], file[:-len('.info.json')])}.mp4"
-            for ext in ["mp4","webm","mkv"]:
-                if os.path.exists(altpath := os.path.join(root,file)[:-len('.info.json')] + f".{ext}"):
+            for ext in ["mp4", "webm", "mkv"]:
+                if os.path.exists(altpath := os.path.join(root, file)[:-len('.info.json')] + f".{ext}"):
                     mp4path = f"{os.path.join(config.files_web_path + root[len(config.files_path):], file[:-len('.info.json')])}.{ext}"
                     break
-    
+
             # Get thumbnail path
             thumbnail = "/default.png"
-            for ext in ["webp","jpg","png"]:
-                if os.path.exists(x := os.path.join(root,file)[:-len('.info.json')] + f".{ext}"):
+            for ext in ["webp", "jpg", "png"]:
+                if os.path.exists(x := os.path.join(root, file)[:-len('.info.json')] + f".{ext}"):
                     thumbnail = config.files_web_path + x[len(config.files_path):]
-    
+
             # Create a download button for the video
             downloadbtn = f"""
                 <a href="/dl{urllib.parse.quote(mp4path)}">
@@ -203,10 +206,10 @@ for root, subdirs, files in os.walk(config.files_path):
                     </div>
                 </a>
             """
-    
+
             # Create multiple video download buttons if we have multiple formats
-            for ext in ["webm","mkv"]:
-                if os.path.exists(altpath := os.path.join(root,file)[:-len('.info.json')] + f".{ext}"):
+            for ext in ["webm", "mkv"]:
+                if os.path.exists(altpath := os.path.join(root, file)[:-len('.info.json')] + f".{ext}"):
                     downloadbtn = f"""
                         <div class="ui left labeled button downloadbtn">
                             <a class="ui basic right pointing label">
@@ -229,9 +232,9 @@ for root, subdirs, files in os.walk(config.files_path):
                             </a>
                         </div>
                     """
-    
+
             # Description download
-            if os.path.exists(descfile := os.path.join(root,file)[:-len('.info.json')] + f".description"):
+            if os.path.exists(descfile := os.path.join(root, file)[:-len('.info.json')] + f".description"):
                 downloadbtn += f"""
                     <br>
                     <a href="/dl{urllib.parse.quote(config.files_web_path + descfile[len(config.files_path):])}">
@@ -240,7 +243,7 @@ for root, subdirs, files in os.walk(config.files_path):
                         </div>
                     </a>
                 """
-    
+
             # Thumbnail download
             if not thumbnail == "/default.png":
                 downloadbtn += f"""
@@ -251,7 +254,7 @@ for root, subdirs, files in os.walk(config.files_path):
                         </div>
                     </a>
                 """
-    
+
             # Subtitles download
             for vtt in (vtt for vtt in files if vtt.endswith(".vtt")):
                 if vtt.startswith(file[:-len('.info.json')]):
@@ -259,7 +262,7 @@ for root, subdirs, files in os.walk(config.files_path):
                         <br>
                         <div class="ui left labeled button downloadbtn">
                             <a class="ui basic right pointing label">
-                                {vtt[len(file[:-len('.info.json')])+1:-len('.vtt')]}
+                                {vtt[len(file[:-len('.info.json')]) + 1:-len('.vtt')]}
                             </a>
                             <a href="/dl{urllib.parse.quote(os.path.join(config.files_web_path + root[len(config.files_path):], vtt))}">
                                 <div class="ui button">
@@ -268,33 +271,35 @@ for root, subdirs, files in os.walk(config.files_path):
                             </a>
                         </div>
                     """
-    
+
             # Create HTML
-            with open(os.path.join(config.output_path,f"videos/{v['id']}.html"),"w") as f:
+            with open(os.path.join(config.output_path, f"videos/{v['id']}.html"), "w") as f:
                 f.write(
-                    templates["base"].format(title=html.escape(v['title']),meta=genMeta(
+                    templates["base"].format(title=html.escape(v['title']), meta=genMeta(
                         {
                             "description": v['description'][:256],
                             "author": v['uploader']
                         }
-                    ),content=
-                        templates["video"].format(
-                            title=html.escape(v['title']),
-                            description=html.escape(v['description']).replace('\n','<br>'),
-                            views=v['view_count'],
-                            uploader_url=(f'{config.web_root}channels/' + getUploaderId(v) + f'{htmlext}' if '/channels/' in root else f'{config.web_root}channels/other{htmlext}'),
-                            uploader_id=getUploaderId(v),
-                            uploader=html.escape(v['uploader']),
-                            date=f"{v['upload_date'][:4]}-{v['upload_date'][4:6]}-{v['upload_date'][6:]}",
-                            video=urllib.parse.quote(mp4path),
-                            thumbnail=urllib.parse.quote(thumbnail),
-                            download=downloadbtn,
-                            comments=comments_link
-                        )
-                    )
+                    ), content=
+                                             templates["video"].format(
+                                                 title=html.escape(v['title']),
+                                                 description=html.escape(v['description']).replace('\n', '<br>'),
+                                                 views=v['view_count'],
+                                                 uploader_url=(f'{config.web_root}channels/' + getUploaderId(
+                                                     v) + f'{htmlext}' if '/channels/' in root else f'{config.web_root}channels/other{htmlext}'),
+                                                 uploader_id=getUploaderId(v),
+                                                 uploader=html.escape(v['uploader']),
+                                                 date=f"{v['upload_date'][:4]}-{v['upload_date'][4:6]}-{v['upload_date'][6:]}",
+                                                 video=urllib.parse.quote(mp4path),
+                                                 thumbnail=urllib.parse.quote(thumbnail),
+                                                 download=downloadbtn,
+                                                 comments=comments_link
+                                             )
+                                             )
                 )
         except Exception as e:
             print(f"Error processing {file}", e)
+
 
 def get_channel_note(channel):
     note_path = f"note/{channel}".replace(".", "_")
@@ -302,6 +307,7 @@ def get_channel_note(channel):
         return ""
     with open(note_path, "r") as f:
         return f.read()
+
 
 # Create channel pages
 print("Creating channel pages")
@@ -320,7 +326,7 @@ for channel in channels:
                         </a>
                     </div>
                 """
-    with open(os.path.join(config.output_path,f"channels/{channel}.html"),"w") as f:
+    with open(os.path.join(config.output_path, f"channels/{channel}.html"), "w") as f:
         cards = ""
         for v in channels[channel]["videos"]:
             cards += f"""
@@ -336,38 +342,38 @@ for channel in channels:
                 </a>
             </div>
             """
-        f.write(templates["base"].format(title=html.escape(channels[channel]['name']),meta=genMeta(
+        f.write(templates["base"].format(title=html.escape(channels[channel]['name']), meta=genMeta(
             {
                 "description": f"{channels[channel]['name']}'s channel archive"
             }
-        ),content=templates["channel"].format(
-                channel=html.escape(channels[channel]['name']),
-                note=get_channel_note(channel),
-                cards=cards
-            )))
-with open(os.path.join(config.output_path,f"channels/index.html"),"w") as f:
-    f.write(templates["base"].format(title="Channels",meta=genMeta(
-            {
-                "description": "Archived channels"
-            }
-        ),content=templates["channel"].format(
-                channel="Channels",
-                note="",
-                cards=channelindex
-            )))
+        ), content=templates["channel"].format(
+            channel=html.escape(channels[channel]['name']),
+            note=get_channel_note(channel),
+            cards=cards
+        )))
+with open(os.path.join(config.output_path, f"channels/index.html"), "w") as f:
+    f.write(templates["base"].format(title="Channels", meta=genMeta(
+        {
+            "description": "Archived channels"
+        }
+    ), content=templates["channel"].format(
+        channel="Channels",
+        note="",
+        cards=channelindex
+    )))
 
 # Write other pages
 print("Writing other pages")
 for custompage in os.listdir('custom'):
     with open(f"custom/{custompage}", "r") as custompagef:
         custompage = os.path.splitext(custompage)[0]
-        with open(os.path.join(config.output_path,f"{custompage}.html"),"w") as f:
-            f.write(templates["base"].format(title=custompage,meta="",content=custompagef.read()))
-with open(os.path.join(config.output_path,f"index.html"),"w") as f:
-    f.write(templates["base"].format(title="Home",meta=genMeta(
-            {
-                "description": f"{config.site_name} - archive"
-            }
-        ),content=templates["index"].replace("{config.site_name}",config.site_name)))
+        with open(os.path.join(config.output_path, f"{custompage}.html"), "w") as f:
+            f.write(templates["base"].format(title=custompage, meta="", content=custompagef.read()))
+with open(os.path.join(config.output_path, f"index.html"), "w") as f:
+    f.write(templates["base"].format(title="Home", meta=genMeta(
+        {
+            "description": f"{config.site_name} - archive"
+        }
+    ), content=templates["index"].replace("{config.site_name}", config.site_name)))
 
 print("Done")

@@ -4,6 +4,7 @@
   "files_web_path": "/files/",
   "web_root": "/",
   "output_path": "/var/www/html/",
+  "add_html_ext": true,
   "removed_videos_file": "",
   "unlisted_videos_file": ""
 }

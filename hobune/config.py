@@ -19,6 +19,8 @@ class HobuneConfig:
     web_root: str
     # Output path for the HTML files (e.g. "/var/www/html/")
     output_path: str
+    # Add HTML extension to links (e.g. link to /videos/foobar.html instead of /videos/foobar)
+    add_html_ext: bool
     # A text file where each line ends with a removed video ID (optional, e.g. "~/removed_videos.txt")
     removed_videos_file: str
     # Unlisted videos file - similar to the removed videos file (optional)
@@ -55,6 +57,7 @@ def load_config() -> None | HobuneConfig:
                 configfile["files_web_path"],
                 configfile["web_root"],
                 configfile["output_path"],
+                configfile.get("add_html_ext", True),
                 configfile.get("removed_videos_file", ""),
                 configfile.get("unlisted_videos_file", ""),
             )
