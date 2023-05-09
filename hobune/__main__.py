@@ -3,6 +3,9 @@ import shutil
 import html
 import json
 import os
+from dataclasses import dataclass, field
+from typing import Optional
+
 from comments import getCommentsHTML
 
 from hobune.config import load_config
@@ -36,30 +39,42 @@ for template in os.listdir('templates'):
         with open(os.path.join('templates', template), "r") as f:
             templates[template[:-len(".html")]] = f.read()
 
-# Create folders
-for folder in ["channels", "videos", "comments"]:
-    os.makedirs(os.path.join(config.output_path, folder), exist_ok=True)
 
-# Copy assets
-shutil.copy("templates/hobune.css", config.output_path)
-shutil.copy("templates/hobune.js", config.output_path)
-shutil.copy("templates/favicon.ico", config.output_path)
+def init_assets(output_path):
+    # Create folders
+    for folder in ["channels", "videos", "comments"]:
+        os.makedirs(os.path.join(output_path, folder), exist_ok=True)
+
+    # Copy assets
+    shutil.copy("templates/hobune.css", output_path)
+    shutil.copy("templates/hobune.js", output_path)
+    shutil.copy("templates/favicon.ico", output_path)
+
+
+init_assets(config.output_path)
+
+
+@dataclass
+class HobuneChannel:
+    name: str
+    date: Optional[int] = 0
+    removed_count: Optional[int] = 0
+    unlisted_count: Optional[int] = 0
+    videos: list = field(default_factory=list)
+    names: set = field(default_factory=set)
+    handles: set = field(default_factory=set)
+    username: Optional[str] = None
+
 
 # Initialize channels list
 channels = {
-    "other": {
-        "name": "Other videos",
-        "date": -1,
-        "removed": 0,
-        "unlisted": 0,
-        "videos": []
-    }
+    "other": HobuneChannel(
+        name="Other videos",
+    )
 }
 
-# Allows you to disable .html extensions for links if you wish
-# Doesn't affect actual filenames, just links
-# TODO: change back
-htmlext = ".html"  # ""#".html"
+# Extension appended to links
+html_ext = ".html" if config.add_html_ext else ""
 
 
 # Generate meta tags
@@ -92,22 +107,25 @@ for root, subdirs, files in os.walk(config.files_path):
             if v.get("_type") == "playlist" or (len(v["id"]) == 24 and v.get("extractor") == "youtube:tab"):
                 continue
             if "/channels/" in root:
-                channelid = getUploaderId(v)
-                if not channelid:
-                    raise KeyError("uploader_id nor channel_id found")
-                if not channelid in channels:
-                    channels[channelid] = {
-                        "name": "",
-                        "date": 0,
-                        "removed": 0,
-                        "unlisted": 0,
-                        "videos": []
-                    }
-                if channels[channelid]["date"] < int(v["upload_date"]):
-                    channels[channelid]["date"] = int(v["upload_date"])
-                    channels[channelid]["name"] = v["uploader"]
+                channel_id = v.get("channel_id", "NA")
+                channel_name = v["uploader"]
+                uploader_id = v.get("uploader_id")
+                channel_username = uploader_id if uploader_id[0] != "@" else None
+                channel_handle = uploader_id if uploader_id[0] == "@" else None
+                if not channel_id:
+                    raise KeyError("channel_id not found")
+                if channel_id not in channels:
+                    channels[channel_id] = HobuneChannel(channel_name)
+                if channels[channel_id].date < int(v["upload_date"]):
+                    channels[channel_id].date = int(v["upload_date"])
+                    channels[channel_id].name = channel_name
+                channels[channel_id].names.add(channel_name)
+                if channel_handle:
+                    channels[channel_id].handles.add(channel_handle)
+                if channel_username:
+                    channels[channel_id].username = channel_username
             else:
-                channelid = "other"
+                channel_id = "other"
             v["custom_thumbnail"] = "/default.png"
             for ext in ["webp", "jpg", "png"]:
                 if os.path.exists(x := os.path.join(root, file)[:-len('.info.json')] + f".{ext}"):
@@ -115,39 +133,39 @@ for root, subdirs, files in os.walk(config.files_path):
             # Tag video if removed
             v["removed"] = (v["id"] in removed_videos)
             if v["removed"]:
-                channels[channelid]["removed"] += 1
+                channels[channel_id].removed_count += 1
             # Tag video if unlisted
             v["unlisted"] = (v["id"] in unlisted_videos)
             if v["unlisted"]:
-                channels[channelid]["unlisted"] += 1
+                channels[channel_id].unlisted_count += 1
             # Remove unnecessary keys to prevent memory exhaustion on big archives
             [v.pop(k) for k in list(v.keys()) if not k in
                                                      ["title", "id", "custom_thumbnail", "view_count", "upload_date",
                                                       "removed", "unlisted"]
              ]
-            channels[channelid]["videos"].append(v)
+            channels[channel_id].videos.append(v)
         except Exception as e:
             print(f"Error processing {file}", e)
 
 # Add channels to main navbar dropdown (but only if less than 25, otherwise the dropdown menu gets too long)
 if len(channels) < 25:
-    dropdownhtml = ""
+    dropdown_html = ""
     for channel in channels:
-        if not channel == "other":
-            dropdownhtml += f'<a class="item" href="{config.web_root}channels/{channel}{htmlext}">{html.escape(channels[channel]["name"])}</a>'
-    channelshtml = f'''
+        if channel != "other":
+            dropdown_html += f'<a class="item" href="{config.web_root}channels/{channel}{html_ext}">{html.escape(channels[channel].name)}</a> '
+    channels_html = f'''
             <div class="ui simple dropdown item">
             <a href="{config.web_root}channels">Channels</a> <i class="dropdown icon"></i>
             <div class="menu">
                 <!-- <a class="item" href="/channels/other.html">Other videos</a> -->
                 <a class="item" href="{config.web_root}channels/other">Other videos</a>
                 <div class="divider"></div>
-                {dropdownhtml}
+                {dropdown_html}
             </div>
             </div>
     '''
 else:
-    channelshtml = f'''
+    channels_html = f'''
         <a href="{config.web_root}" class="item">
           Channels
         </a>
@@ -157,9 +175,9 @@ custompageshtml = ""
 # Creating links to custom pages
 for custompage in os.listdir('custom'):
     custompage = os.path.splitext(custompage)[0]
-    custompageshtml += f'<a href="{config.web_root}{custompage}{htmlext}" class="{"item right" if len(custompageshtml) == 0 else "item"}">{custompage}</a>'
+    custompageshtml += f'<a href="{config.web_root}{custompage}{html_ext}" class="{"item right" if len(custompageshtml) == 0 else "item"}">{custompage}</a>'
 
-templates["base"] = templates["base"].replace("{channels}", channelshtml).replace("{custompages}",
+templates["base"] = templates["base"].replace("{channels}", channels_html).replace("{custompages}",
                                                                                   custompageshtml).replace(
     "{config.web_root}", config.web_root).replace("{config.site_name}", config.site_name)
 
@@ -286,7 +304,7 @@ for root, subdirs, files in os.walk(config.files_path):
                                                  description=html.escape(v['description']).replace('\n', '<br>'),
                                                  views=v['view_count'],
                                                  uploader_url=(f'{config.web_root}channels/' + getUploaderId(
-                                                     v) + f'{htmlext}' if '/channels/' in root else f'{config.web_root}channels/other{htmlext}'),
+                                                     v) + f'{html_ext}' if '/channels/' in root else f'{config.web_root}channels/other{html_ext}'),
                                                  uploader_id=getUploaderId(v),
                                                  uploader=html.escape(v['uploader']),
                                                  date=f"{v['upload_date'][:4]}-{v['upload_date'][4:6]}-{v['upload_date'][6:]}",
@@ -314,13 +332,13 @@ print("Creating channel pages")
 channelindex = ""
 for channel in channels:
     channelindex += f"""
-                    <div class="column searchable" data-name="{html.escape(channels[channel]['name'])}">
-                        <a href="{config.web_root}channels/{channel}{htmlext}" class="ui card">
+                    <div class="column searchable" data-name="{html.escape(channels[channel].name)}">
+                        <a href="{config.web_root}channels/{channel}{html_ext}" class="ui card">
                             <div class="content">
-                                <div class="header">{html.escape(channels[channel]['name'])}</div>
+                                <div class="header">{html.escape(channels[channel].name)}</div>
                                 <div class="meta">{channel}</div>
                                 <div class="description">
-                                    {len(channels[channel]['videos'])} videos{' (' + str(channels[channel]['removed']) + ' removed)' if channels[channel]['removed'] > 0 else ''}{' (' + str(channels[channel]['unlisted']) + ' unlisted)' if channels[channel]['unlisted'] > 0 else ''}
+                                    {len(channels[channel].videos)} videos{' (' + str(channels[channel].removed_count) + ' removed)' if channels[channel].removed_count > 0 else ''}{' (' + str(channels[channel].unlisted_count) + ' unlisted)' if channels[channel].unlisted_count > 0 else ''}
                                 </div>
                             </div>
                         </a>
@@ -328,10 +346,10 @@ for channel in channels:
                 """
     with open(os.path.join(config.output_path, f"channels/{channel}.html"), "w") as f:
         cards = ""
-        for v in channels[channel]["videos"]:
+        for v in channels[channel].videos:
             cards += f"""
             <div class="column searchable" data-name="{html.escape(v['title'])}">
-                <a href="{config.web_root}videos/{v['id']}{htmlext}" class="ui fluid card">
+                <a href="{config.web_root}videos/{v['id']}{html_ext}" class="ui fluid card">
                   <div class="image thumbnail">
                         <img loading="lazy" src="{urllib.parse.quote(v['custom_thumbnail'])}">
                   </div>
@@ -342,12 +360,12 @@ for channel in channels:
                 </a>
             </div>
             """
-        f.write(templates["base"].format(title=html.escape(channels[channel]['name']), meta=genMeta(
+        f.write(templates["base"].format(title=html.escape(channels[channel].name), meta=genMeta(
             {
-                "description": f"{channels[channel]['name']}'s channel archive"
+                "description": f"{channels[channel].name}'s channel archive"
             }
         ), content=templates["channel"].format(
-            channel=html.escape(channels[channel]['name']),
+            channel=html.escape(channels[channel].name),
             note=get_channel_note(channel),
             cards=cards
         )))
