@@ -2,19 +2,21 @@
 <html lang="en">
   <head>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="stylesheet" type="text/css" href="{config.web_root}hobune.css">
-    <script src="{config.web_root}hobune.js"></script>
-    <title>{title} - {config.site_name}</title>
+    <link rel="stylesheet" type="text/css" href="{web_root}hobune.css">
+    <script src="{web_root}hobune.js"></script>
+    <title>{title} - {site_name}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta charset="UTF-8">
     {meta}
   </head>
   <body>
     <div class="header">
-      <a href="{config.web_root}" class="item primary">
-        {config.site_name}
+      <a href="{web_root}" class="item primary">
+        {site_name}
       </a>
-      {channels}
+      <a href="{web_root}channels/" class="item">
+        Channels
+      </a>
       <span class="item grow"></span>
       {custom_pages}
     </div>

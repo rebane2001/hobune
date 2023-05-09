@@ -1,11 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
 
+/* Base */
 html, body {
     margin: 0;
     padding: 0;
     font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
     font-size: 14px;
     line-height: 1.4285em;
+    height: 100%;
 }
 
 a {
@@ -13,6 +15,17 @@ a {
     text-decoration: none;
 }
 
+:focus-visible {
+    /* Maybe we can fix this later */
+    outline: -webkit-focus-ring-color auto 1px;
+}
+
+/* Utilities */
+.grow {
+    flex-grow: 1;
+}
+
+/* Header bar */
 .header {
     background: #1b1c1d;
     color: white;
@@ -31,7 +44,7 @@ a {
     font-weight: 400;
     line-height: 1;
     position: relative;
-    transition: background .1s ease,box-shadow .1s ease,color .1s ease,-webkit-box-shadow .1s ease;
+    transition: background .1s ease;
 }
 
 .header .item.primary {
@@ -52,10 +65,44 @@ a {
     width: 1px;
 }
 
-.grow {
-    flex-grow: 1;
+/* Home page */
+.home {
+    padding-top: 105px;
+    text-align: center;
 }
 
+.home .title {
+    color: #fff;
+    font-weight: 700;
+}
+
+.home a.button {
+    color: #fff;
+    background-color: #2185d0;
+    font-size: 1.5rem;
+    padding: 12px 36px;
+    font-weight: 700;
+    border-radius: 4px;
+    line-height: 2;
+    transition: background .1s ease;
+}
+
+.home a.button:hover {
+    background-color: #1678c2;
+    animation: hue 1.5s infinite linear;
+}
+
+@-webkit-keyframes hue {
+    from {
+        filter: hue-rotate(0deg);
+    }
+
+    to {
+        filter: hue-rotate(-360deg);
+    }
+}
+
+/* Other */
 .rounded {
 	border-radius: 5px; 
     overflow: hidden; 
