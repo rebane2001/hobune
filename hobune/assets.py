@@ -59,7 +59,6 @@ def update_templates(config, templates, channels, html_ext):
                                                                                        custom_pages_html).replace(
         "{config.web_root}", config.web_root).replace("{config.site_name}", config.site_name)
 
-    print("Writing other pages")
     for custom_page in os.listdir('custom'):
         with open(f"custom/{custom_page}", "r") as custom_page_file:
             custom_page = os.path.splitext(custom_page)[0]

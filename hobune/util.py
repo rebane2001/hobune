@@ -17,3 +17,13 @@ def quote_url(url):
         url = url.replace("%5C", "/")
     return urllib.parse.quote(url)
 
+
+def extract_ids_from_txt(filename):
+    ids = set()
+    if len(filename):
+        with open(filename, "r") as f:
+            for l in f:
+                if len(l.strip()) >= 11:
+                    ids.add(l.strip()[-11:])
+    return ids
+
