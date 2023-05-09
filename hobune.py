@@ -62,6 +62,10 @@ for template in os.listdir('templates'):
         with open(os.path.join('templates',template),"r") as f:
             templates[template[:-len(".html")]] = f.read()
 
+# Create folders
+for folder in ["channels", "videos", "comments"]:
+    os.makedirs(os.path.join(outpath, folder), exist_ok=True)
+
 # Copy assets
 shutil.copy("templates/hobune.css",outpath)
 shutil.copy("templates/hobune.js",outpath)
@@ -80,7 +84,8 @@ channels = {
 
 # Allows you to disable .html extensions for links if you wish
 # Doesn't affect actual filenames, just links
-htmlext = ""#".html"
+# TODO: change back
+htmlext = ".html"#""#".html"
 
 # Generate meta tags
 def genMeta(meta):
