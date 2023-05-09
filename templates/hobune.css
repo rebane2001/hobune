@@ -25,6 +25,72 @@ a {
     flex-grow: 1;
 }
 
+.container {
+    width: auto;
+    max-width: 1127px;
+    margin: auto;
+}
+
+/* Grid */
+.flex-grid {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: stretch;
+    padding: 0;
+}
+
+.card {
+    width: 100%;
+}
+
+@media (min-width: 480px) {
+    .card {
+        width: 33.33333333%;
+    }
+}
+
+.card .content * {
+    margin: 0;
+}
+
+.card > .inner {
+    display: block;
+    border: solid #bdbdbd 1px;
+    border-radius: 4px;
+    margin: 14px;
+    overflow-wrap: break-word;
+    transition: border 0.1s ease, transform 0.1s ease;
+}
+
+.card > .inner:hover {
+    border: solid #888 1px;
+    transform: translateY(-2px);
+}
+
+.card > .inner > .content {
+    padding: 14px;
+}
+
+.card > .inner > .content .title {
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1.3;
+    margin-top: -2px;
+    color: rgba(0,0,0,.85);
+}
+
+.card > .inner > .image {
+    width: 100%;
+    border-radius: 3.1px 3.1px 0 0;
+}
+.card > .inner > .image > img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: inherit;
+}
+
 /* Header bar */
 .header {
     background: #1b1c1d;
@@ -106,10 +172,6 @@ a {
 .rounded {
 	border-radius: 5px; 
     overflow: hidden; 
-}
-
-.main.container {
-  margin-top: 5em;
 }
 
 .downloadbtn {

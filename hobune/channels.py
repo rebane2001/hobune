@@ -108,10 +108,10 @@ def create_channel_pages(config, templates, channels, html_ext):
     for channel in channels:
         logger.debug(f"Creating channel pages for {channels[channel].name}")
         channelindex += f"""
-                        <div class="column searchable" data-name="{html.escape(channels[channel].name)}">
-                            <a href="{config.web_root}channels/{channel}{html_ext}" class="ui card">
+                        <div class="card searchable" data-name="{html.escape(channels[channel].name)}">
+                            <a href="{config.web_root}channels/{channel}{html_ext}" class="inner">
                                 <div class="content">
-                                    <div class="header">{html.escape(channels[channel].name)}</div>
+                                    <div class="title">{html.escape(channels[channel].name)}</div>
                                     <div class="meta">{channel}</div>
                                     <div class="description">
                                         {len(channels[channel].videos)} videos{' (' + str(channels[channel].removed_count) + ' removed)' if channels[channel].removed_count > 0 else ''}{' (' + str(channels[channel].unlisted_count) + ' unlisted)' if channels[channel].unlisted_count > 0 else ''}
@@ -124,13 +124,13 @@ def create_channel_pages(config, templates, channels, html_ext):
             cards = ""
             for v in channels[channel].videos:
                 cards += f"""
-                <div class="column searchable" data-name="{html.escape(v['title'])}">
-                    <a href="{config.web_root}videos/{v['id']}{html_ext}" class="ui fluid card">
+                <div class="card searchable" data-name="{html.escape(v['title'])}">
+                    <a href="{config.web_root}videos/{v['id']}{html_ext}" class="inner">
                       <div class="image thumbnail">
                             <img loading="lazy" src="{quote_url(v['custom_thumbnail'])}">
                       </div>
                       <div class="content{' removedvideo' if v["removed"] else ''}{' unlistedvideo' if v["unlisted"] else ''}">
-                        <h3 class="header">{html.escape(v['title'])}</h3>
+                        <h3 class="title">{html.escape(v['title'])}</h3>
                         <p>{v['view_count']} views, {v['upload_date'][:4]}-{v['upload_date'][4:6]}-{v['upload_date'][6:]}</p>
                       </div>
                     </a>

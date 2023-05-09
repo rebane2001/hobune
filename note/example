@@ -1,4 +1,4 @@
 <div class="ui yellow message">
-    <div class="header">Example note!</div>
+    <div class="title">Example note!</div>
     <p>This note will appear on the channel page of a channel whose ID is "example".</p>
 </div>
