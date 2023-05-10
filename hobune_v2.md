@@ -20,3 +20,5 @@ Hobune needs a few changes made and I think it might be best to create a "v2" fo
 - Link back to YouTube links whereever possible
 - Make it easier to download everything, eg provide a wget command (maybe we could even download and generate a zip in JS for smaller channels?)
 - Support generating comments even if video itself isn't present
+- Cache folder listings (so we don't like /other a hundred thousand times)
+- Extract metadata gathering from info.json into a separate module so it can easily be extended for fallbacks
