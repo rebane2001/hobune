@@ -127,6 +127,7 @@ def create_channel_pages(config, templates, channels, html_ext):
     channelindex = ""
     for channel in channels:
         logger.debug(f"Creating channel pages for {channels[channel].name}")
+        videos_count_str = f"{len(channels[channel].videos)} videos{' (' + str(channels[channel].removed_count) + ' removed)' if channels[channel].removed_count > 0 else ''}{' (' + str(channels[channel].unlisted_count) + ' unlisted)' if channels[channel].unlisted_count > 0 else ''}"
         channelindex += f"""
                         <div class="card searchable" data-search="{html.escape(get_channel_search_string(channels[channel]))}">
                             <a href="{config.web_root}channels/{channel}{html_ext}" class="inner">
@@ -134,7 +135,7 @@ def create_channel_pages(config, templates, channels, html_ext):
                                     <div class="title">{html.escape(channels[channel].name)}</div>
                                     <div class="meta">{channels[channel].username or channel}</div>
                                     <div class="description">
-                                        {len(channels[channel].videos)} videos{' (' + str(channels[channel].removed_count) + ' removed)' if channels[channel].removed_count > 0 else ''}{' (' + str(channels[channel].unlisted_count) + ' unlisted)' if channels[channel].unlisted_count > 0 else ''}
+                                        {videos_count_str}
                                     </div>
                                 </div>
                             </a>
@@ -142,15 +143,15 @@ def create_channel_pages(config, templates, channels, html_ext):
                     """
         with open(os.path.join(config.output_path, f"channels/{channel}.html"), "w") as f:
             cards = ""
-            subtitle = f"<p class=\"subtitle\">{get_channel_aka(channels[channel])}</p>"
-            for v in channels[channel].videos:
+            subtitle = f"<p class=\"subtitle\">{get_channel_aka(channels[channel])}<br>{videos_count_str}</p>"
+            for v in sorted(channels[channel].videos, key=lambda x: x['upload_date'], reverse=True):
                 cards += f"""
-                <div class="card searchable" data-search="{html.escape(v['title'])}">
+                <div class="card searchable" data-search="{html.escape(v['title'])}" data-date="{v['upload_date']}" data-views="{v['view_count']}">
                     <a href="{config.web_root}videos/{v['id']}{html_ext}" class="inner">
                       <div class="image thumbnail">
                             <img loading="lazy" src="{quote_url(v['custom_thumbnail'])}">
                       </div>
-                      <div class="content{' removedvideo' if v["removed"] else ''}{' unlistedvideo' if v["unlisted"] else ''}">
+                      <div class="content{' removed' if v["removed"] else ''}{' unlisted' if v["unlisted"] else ''}">
                         <h3 class="title">{html.escape(v['title'])}</h3>
                         <p>{v['view_count']} views, {v['upload_date'][:4]}-{v['upload_date'][4:6]}-{v['upload_date'][6:]}</p>
                       </div>
@@ -165,6 +166,7 @@ def create_channel_pages(config, templates, channels, html_ext):
                 channel=html.escape(channels[channel].name),
                 subtitle=subtitle,
                 note=get_channel_note(channel),
+                sort="",
                 cards=cards
             )))
     with open(os.path.join(config.output_path, "channels/index.html"), "w") as f:
@@ -176,5 +178,6 @@ def create_channel_pages(config, templates, channels, html_ext):
             channel="Channels",
             note="",
             subtitle="",
+            sort=" hide",
             cards=channelindex
         )))

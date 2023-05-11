@@ -303,17 +303,21 @@ a {
 }
 
 /* Other */
-.search {
-    padding: 6px 14px;
+.sort, .search {
     border: 1px solid rgba(34,36,38,.15);
     border-radius: 4px;
     outline: 0;
     color: rgba(0,0,0,.87);
+    padding: 6px;
 }
 
-.search:focus {
+.sort:focus, .search:focus {
     border-color: #85b7d9;
     color: rgba(0,0,0,.8);
+}
+
+.search {
+    padding: 7px 14px;
 }
 
 .rounded {
@@ -330,15 +334,15 @@ a {
   display: none!important;
 }
 
-.removedvideo {
+.removed {
   background-color: #ffb4df!important;
 }
 
-.unlistedvideo {
+.unlisted {
     background-color: #fff1b4!important;
 }
 
-.removedvideo.unlistedvideo {
+.removed.unlisted {
     background-color: #ffa1a1!important;
 }
 
