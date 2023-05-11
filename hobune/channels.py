@@ -1,11 +1,12 @@
 import html
 import json
 import os
+import shutil
 from dataclasses import dataclass, field
 from typing import Optional
 
 from hobune.logger import logger
-from hobune.util import quote_url, generate_meta_tags, extract_ids_from_txt
+from hobune.util import quote_url, generate_meta_tags, extract_ids_from_txt, no_traverse
 
 
 @dataclass
@@ -141,7 +142,7 @@ def create_channel_pages(config, templates, channels, html_ext):
                             </a>
                         </div>
                     """
-        with open(os.path.join(config.output_path, f"channels/{channel}.html"), "w") as f:
+        with open(channel_html_path := os.path.join(config.output_path, f"channels/{no_traverse(channel)}.html"), "w") as f:
             cards = ""
             subtitle = f"<p class=\"subtitle\">{get_channel_aka(channels[channel])}<br>{videos_count_str}</p>"
             for v in sorted(channels[channel].videos, key=lambda x: x['upload_date'], reverse=True):
@@ -169,6 +170,8 @@ def create_channel_pages(config, templates, channels, html_ext):
                 sort="",
                 cards=cards
             )))
+        if channels[channel].username:
+            shutil.copy(channel_html_path, os.path.join(config.output_path, f"channels/{no_traverse(channels[channel].username)}.html"))
     with open(os.path.join(config.output_path, "channels/index.html"), "w") as f:
         f.write(templates["base"].format(title="Channels", meta=generate_meta_tags(
             {

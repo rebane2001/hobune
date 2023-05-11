@@ -2,9 +2,10 @@ import html
 import json
 import os
 
+from hobune.channels import is_full_channel
 from hobune.comments import getCommentsHTML
 from hobune.logger import logger
-from hobune.util import generate_meta_tags, quote_url
+from hobune.util import generate_meta_tags, quote_url, no_traverse
 
 
 def generate_download_button(name, url, tag=None, prefix="/dl"):
@@ -25,7 +26,7 @@ def generate_download_button(name, url, tag=None, prefix="/dl"):
     """
 
 
-def create_video_pages(config, channels, templates):
+def create_video_pages(config, channels, templates, html_ext):
     for channel in channels:
         logger.debug(f"Creating video pages for {channels[channel].name}")
         for video_entry in channels[channel].videos:
@@ -46,7 +47,7 @@ def create_video_pages(config, channels, templates):
                 comments_html, comments_count = getCommentsHTML(html.escape(v['title']), v['id'])
                 comments_link = ""
                 if comments_html:
-                    with open(os.path.join(config.output_path, f"comments/{v['id']}.html"), "w") as f:
+                    with open(os.path.join(config.output_path, f"comments/{no_traverse(v['id'])}.html"), "w") as f:
                         f.write(templates["base"].format(title=html.escape(v['title'] + ' - Comments'), meta=page_meta,
                                                          content=comments_html))
                     comments_link = f'<p class="comments"><a href="/comments/{v["id"]}">View comments ({comments_count})</a></p>'
@@ -95,13 +96,8 @@ def create_video_pages(config, channels, templates):
                     title=html.escape(v['title']),
                     description=html.escape(v['description']).replace('\n', '<br>'),
                     views=v['view_count'],
-                    # TODO: Fix these
-                    uploader_url="",
-                    uploader_id="",
-                    # uploader_url=(f'{config.web_root}channels/' + getUploaderId(
-                    #     v) + f'{html_ext}' if is_full_channel(
-                    #     root) else f'{config.web_root}channels/other{html_ext}'),
-                    # uploader_id=getUploaderId(v),
+                    uploader_url=f"{config.web_root}channels/{html.escape(v['channel_id'])}{html_ext}" if is_full_channel(root) else f'{config.web_root}channels/other{html_ext}',
+                    uploader_id={html.escape(v['channel_id'])},
                     uploader=html.escape(v['uploader']),
                     date=f"{v['upload_date'][:4]}-{v['upload_date'][4:6]}-{v['upload_date'][6:]}",
                     video=quote_url(mp4path),
@@ -110,7 +106,7 @@ def create_video_pages(config, channels, templates):
                     comments=comments_link
                 )
 
-                with open(os.path.join(config.output_path, f"videos/{v['id']}.html"), "w") as f:
+                with open(os.path.join(config.output_path, f"videos/{no_traverse(v['id'])}.html"), "w") as f:
                     f.write(templates["base"].format(title=html.escape(v['title']), meta=page_meta, content=page_html))
             except Exception as e:
                 logger.error(f"Error processing {file}")

@@ -26,7 +26,7 @@ def main():
     update_templates(config, templates, html_ext)
 
     logger.info("Creating video pages")
-    create_video_pages(config, channels, templates)
+    create_video_pages(config, channels, templates, html_ext)
 
     logger.info("Creating channel pages")
     create_channel_pages(config, templates, channels, html_ext)

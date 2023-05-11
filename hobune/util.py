@@ -3,6 +3,10 @@ import urllib.parse
 import html
 
 
+def no_traverse(path):
+    return path.replace("/", "").replace("\\", "")
+
+
 def generate_meta_tags(meta):
     h = ""
     for m in meta:
