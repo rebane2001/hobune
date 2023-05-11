@@ -1,9 +1,10 @@
 {
-  "sitename": "Hobune",
-  "ytpath": "/var/www/html/files/",
-  "ytpathweb": "/files/",
-  "webpath": "/",
-  "outpath": "/var/www/html/",
-  "removedvideosfile": "",
-  "unlistedvideosfile": ""
+  "site_name": "Hobune",
+  "files_path": "/var/www/html/files/",
+  "files_web_path": "/files/",
+  "web_root": "/",
+  "output_path": "/var/www/html/",
+  "add_html_ext": true,
+  "removed_videos_file": "",
+  "unlisted_videos_file": ""
 }

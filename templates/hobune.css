@@ -1,14 +1,367 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+
+/* Base */
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
+    font-size: 14px;
+    line-height: 1.4285em;
+    height: 100%;
+}
+
+a {
+    color: #4183c4;
+    text-decoration: none;
+}
+
+:focus-visible {
+    /* Maybe we can fix this later */
+    outline: -webkit-focus-ring-color auto 1px;
+}
+
+/* Utilities */
+.grow {
+    flex-grow: 1;
+}
+
+.container {
+    width: auto;
+    max-width: 1127px;
+    margin: auto;
+}
+
+/* Grid */
+.flex-grid {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: stretch;
+    padding: 0;
+}
+
+.card {
+    width: 100%;
+}
+
+@media (min-width: 480px) {
+    .card {
+        width: 33.33333333%;
+    }
+}
+
+.card .content * {
+    margin: 0;
+}
+
+.card > .inner {
+    display: block;
+    border: solid #bdbdbd 1px;
+    border-radius: 4px;
+    margin: 14px;
+    overflow-wrap: break-word;
+    transition: border 0.1s ease, transform 0.1s ease;
+}
+
+.card > .inner:hover {
+    border: solid #888 1px;
+    transform: translateY(-2px);
+}
+
+.card > .inner:active {
+    transform: translateY(1px);
+}
+
+.card > .inner > .content {
+    padding: 14px;
+}
+
+.card > .inner > .content .title {
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1.3;
+    margin-top: -2px;
+    color: rgba(0,0,0,.85);
+}
+
+.card > .inner > .content .meta {
+    color: rgba(0,0,0,.4);
+    margin-bottom: 7px;
+}
+
+.card > .inner > .content .description {
+    color: rgba(0,0,0,.68);
+}
+
+.card > .inner > .image {
+    width: 100%;
+    border-radius: 3.1px 3.1px 0 0;
+}
+
+.card > .inner > .image > img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: inherit;
+}
+
+.channels .head {
+    display: flex;
+    align-items: center;
+    margin: 20px 14px 0 14px;
+}
+
+.channels .head .title {
+    flex-grow: 1;
+}
+
+.channels .head .title h1 {
+    margin: 0;
+}
+
+.channels .subtitle {
+    margin: 0;
+}
+
+/* Header bar */
+.header {
+    background: #1b1c1d;
+    color: white;
+    position: sticky;
+    top: 0;
+    height: 40px;
+    overflow: hidden;
+    display: flex;
+    z-index: 10;
+}
+
+.header .item, .header a.item {
+    color: rgba(255,255,255,.9);
+    padding: 13px 16px;
+    height: 14px;
+    display: inline-block;
+    font-weight: 400;
+    line-height: 1;
+    position: relative;
+    transition: background .1s ease;
+}
+
+.header .item.primary {
+    font-weight: 700;
+}
+
+.header .item:hover {
+    background-color: rgba(255,255,255,.08);
+}
+
+.header .item:before {
+    background: rgba(255,255,255,.08);
+    position: absolute;
+    content: '';
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 1px;
+}
+
+/* Home page */
+.home {
+    padding-top: 105px;
+    text-align: center;
+}
+
+.home .title {
+    color: #fff;
+    font-weight: 700;
+}
+
+.home a.button {
+    color: #fff;
+    background-color: #2185d0;
+    font-size: 1.5rem;
+    padding: 12px 36px;
+    font-weight: 700;
+    border-radius: 4px;
+    line-height: 2;
+}
+
+.home a.button:hover {
+    background-color: #1678c2;
+    animation: hue 1.5s infinite linear;
+}
+
+.home a.button:active {
+    background-color: #000;
+}
+
+@-webkit-keyframes hue {
+    from {
+        filter: hue-rotate(0deg);
+    }
+
+    to {
+        filter: hue-rotate(-360deg);
+    }
+}
+
+/* Video */
+.video {
+    width: 100%;
+    max-height: 75vh;
+}
+
+.info {
+    width: 100%;
+    display: flex;
+}
+
+.info .main {
+    flex-grow: 1;
+}
+
+.info .main .comments {
+    font-weight: 700;
+}
+
+.info .main .subtitle {
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.info .side {
+    white-space: nowrap;
+    text-align: right;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.info .side .views {
+    font-size: 18px;
+    margin-bottom: 0.35em;
+}
+
+.info .side .date {
+    margin: 0;
+}
+
+.info .side .uploader {
+    margin-top: 0;
+}
+
+/* Icons */
+@font-face {
+    font-family: 'icons';
+    src: url('icons.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+}
+
+.icon {
+    font-family: 'icons' !important;
+    speak: never;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+}
+
+.button .icon {
+    margin: 0 6px 0 -3px;
+    opacity: .8;
+}
+
+.icon.download:before {
+    content: "\e900";
+}
+
+/* Button */
+.button {
+    transition: background .1s ease;
+}
+
+.button.download {
+    display: inline-block;
+    border-radius: 4px;
+    color: rgba(0,0,0,.6);
+    font-weight: 700;
+    font-size: 14px;
+    padding: 8px 21px;
+    margin-bottom: 0.3em;
+    background: #e0e1e2;
+}
+
+.button.download:hover {
+    background: #cacbcd;
+    color: rgba(0,0,0,.8);
+}
+
+.button.download:active {
+    background: #babbbc;
+    color: rgba(0,0,0,.9);
+}
+
+/* Note */
+.note {
+    margin: 14px;
+    padding: 14px 14px 0 14px;
+    color: rgba(0,0,0,.87);
+    border: solid rgba(0,0,0,.87) 1px;
+    background-color: #f8f8f9;
+    border-radius: 4px;
+}
+
+.note.yellow {
+    color: #b58105;
+    border: solid #b58105 1px;
+    background-color: #fff8db;
+}
+
+.note.red {
+    color: #db2828;
+    border: solid #db2828 1px;
+    background-color: #ffe8e6;
+}
+
+.note.green {
+    color: #1ebc30;
+    border: solid #1ebc30 1px;
+    background-color: #e5f9e7;
+}
+
+.note.blue {
+    color: #276f86;
+    border: solid #276f86 1px;
+    background-color: #f8ffff;
+}
+
+.note .title {
+    font-weight: 700;
+    font-size: 18px;
+}
+
+/* Other */
+.sort, .search {
+    border: 1px solid rgba(34,36,38,.15);
+    border-radius: 4px;
+    outline: 0;
+    color: rgba(0,0,0,.87);
+    padding: 6px;
+}
+
+.sort:focus, .search:focus {
+    border-color: #85b7d9;
+    color: rgba(0,0,0,.8);
+}
+
+.search {
+    padding: 7px 14px;
+}
+
 .rounded {
 	border-radius: 5px; 
     overflow: hidden; 
-}
-
-.main.container {
-  margin-top: 5em;
-}
-
-.downloadbtn {
-  margin-bottom: 0.3em!important;
 }
 
 .ui.footer.segment {
@@ -20,16 +373,16 @@
   display: none!important;
 }
 
-.removedvideo {
-  background-color: #ffb4df!important;
+.removed {
+  background-color: #ffb4df;
 }
 
-.unlistedvideo {
-    background-color: #fff1b4!important;
+.unlisted {
+    background-color: #fff1b4;
 }
 
-.removedvideo.unlistedvideo {
-    background-color: #ffa1a1!important;
+.removed.unlisted {
+    background-color: #ffa1a1;
 }
 
 .thumbnail {
