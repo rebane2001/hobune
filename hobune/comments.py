@@ -33,28 +33,33 @@ def getCommentsHTML(title, videoid):
         with open(f"{comments_path}/{videoid}.jsonl", "r") as f:
             header = json.loads(f.readline())
             # Hacky workaround if you don't use my format of comments (w/header)
-            if not "time_fetched" in header:
+            if "time_fetched" not in header:
                 comments.append(header)
                 header = {"time_fetched": "N/A"}
             for l in f:
                 comments.append(json.loads(l))
     except Exception:
         return False, 0
-    comments_html = f"""<div class="ui container main">
-    <h1 class="ui big header">{title}</h1>
-                        <a href="/videos/{videoid}">Back to video page</a> | <a href="/comments/{videoid}.jsonl">Download comments jsonl</a>
-                                     <h2 class="ui header">Comments (archived {header["time_fetched"][:16].replace("T", " ")})</h2>
-                                                                                                         <div class="comments">\n"""
+    comments_html = ""
     comments_count = 0
+    total_count = 0
     for comment in comments:
         comments_count += 1
+        total_count += 1
         csnip = comment["snippet"]["topLevelComment"]["snippet"]
         comment_html = getCommentHTML(csnip)
         if "replies" in comment:
             replies = ""
             for reply in comment["replies"]["comments"][::-1]:
+                total_count += 1
                 replies += f'<div class="reply">{getCommentHTML(reply["snippet"])}</div>\n'
             comment_html += f"<details><summary>Replies ({len(comment['replies']['comments'])})</summary>\n{replies}</details>"
         comments_html += f'<div class="comment">{comment_html}</div>\n'
-    comments_html += "</div></div>"
+    comments_html = f"""<div class="container">
+    <h1>{title}</h1>
+                        <a href="/videos/{videoid}">Back to video page</a> | <a href="/comments/{videoid}.jsonl">Download comments jsonl</a>
+                                     <h2>Comments (archived {header["time_fetched"][:16].replace("T", " ")}; {comments_count} top, {total_count} total comments)</h2>
+                                                                                                         <div class="comments">\n
+                                                                                                         {comments_html}
+                                                                                                         </div></div>"""
     return comments_html, comments_count
