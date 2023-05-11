@@ -46,7 +46,7 @@ def create_video_pages(config, channels, templates, html_ext):
                     with open(os.path.join(config.output_path, f"comments/{no_traverse(v['id'])}.html"), "w") as f:
                         f.write(templates["base"].format(title=html.escape(v['title'] + ' - Comments'), meta=page_meta,
                                                          content=comments_html))
-                    comments_link = f'<p class="comments"><a href="/comments/{v["id"]}">View comments ({comments_count})</a></p>'
+                    comments_link = f'<p class="comments"><a href="/comments/{v["id"]}{html_ext}">View comments ({comments_count})</a></p>'
                 # Set mp4 path
                 mp4path = f"{os.path.join(config.files_web_path + root[len(config.files_path):], base)}.mp4"
                 for ext in ["mp4", "webm", "mkv"]:
