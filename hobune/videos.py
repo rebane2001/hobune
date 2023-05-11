@@ -27,13 +27,16 @@ def generate_download_button(name, url, tag=None, prefix="/dl"):
 
 
 def create_video_pages(config, channels, templates, html_ext):
+    dir_listings = {}
     for channel in channels:
         logger.debug(f"Creating video pages for {channels[channel].name}")
         for video_entry in channels[channel].videos:
             root = video_entry["root"]
             file = video_entry["file"]
             base = file[:-len(".info.json")]
-            files = os.listdir(root)
+            if root not in dir_listings:
+                dir_listings[root] = os.listdir(root)
+            files = dir_listings[root]
             try:
                 with open(os.path.join(root, file), "r") as f:
                     v = json.load(f)
