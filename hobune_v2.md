@@ -22,3 +22,4 @@ Hobune needs a few changes made and I think it might be best to create a "v2" fo
 - Support generating comments even if video itself isn't present
 - Cache folder listings (so we don't like /other a hundred thousand times)
 - Extract metadata gathering from info.json into a separate module so it can easily be extended for fallbacks
+- Single video/channel mode

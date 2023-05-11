@@ -68,6 +68,10 @@ a {
     transform: translateY(-2px);
 }
 
+.card > .inner:active {
+    transform: translateY(1px);
+}
+
 .card > .inner > .content {
     padding: 14px;
 }
@@ -152,12 +156,15 @@ a {
     font-weight: 700;
     border-radius: 4px;
     line-height: 2;
-    transition: background .1s ease;
 }
 
 .home a.button:hover {
     background-color: #1678c2;
     animation: hue 1.5s infinite linear;
+}
+
+.home a.button:active {
+    background-color: #000;
 }
 
 @-webkit-keyframes hue {
@@ -170,14 +177,108 @@ a {
     }
 }
 
+/* Video */
+.video {
+    width: 100%;
+    max-height: 75vh;
+}
+
+.info {
+    width: 100%;
+    display: flex;
+}
+
+.info .main {
+    flex-grow: 1;
+}
+
+.info .main .comments {
+    font-weight: 700;
+}
+
+.info .main .subtitle {
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.info .side {
+    white-space: nowrap;
+    text-align: right;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.info .side .views {
+    font-size: 18px;
+    margin-bottom: 0.35em;
+}
+
+.info .side .date {
+    margin: 0;
+}
+
+.info .side .uploader {
+    margin-top: 0;
+}
+
+/* Icons */
+@font-face {
+    font-family: 'icons';
+    src: url('icons.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+}
+
+.icon {
+    font-family: 'icons' !important;
+    speak: never;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+}
+
+.button .icon {
+    margin: 0 6px 0 -3px;
+    opacity: .8;
+}
+
+.icon.download:before {
+    content: "\e900";
+}
+
+/* Button */
+.button {
+    transition: background .1s ease;
+}
+
+.button.download {
+    display: inline-block;
+    border-radius: 4px;
+    color: rgba(0,0,0,.6);
+    font-weight: 700;
+    font-size: 14px;
+    padding: 8px 21px;
+    margin-bottom: 0.3em;
+    background: #e0e1e2;
+}
+
+.button.download:hover {
+    background: #cacbcd;
+    color: rgba(0,0,0,.8);
+}
+
+.button.download:active {
+    background: #babbbc;
+    color: rgba(0,0,0,.9);
+}
+
 /* Other */
 .rounded {
 	border-radius: 5px; 
     overflow: hidden; 
-}
-
-.downloadbtn {
-  margin-bottom: 0.3em!important;
 }
 
 .ui.footer.segment {

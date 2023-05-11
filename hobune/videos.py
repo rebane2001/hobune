@@ -17,8 +17,8 @@ def generate_download_button(name, url, tag=None, prefix="/dl"):
     return f"""
     <a href="{prefix}{url}">
         {tag_part}
-        <div class="ui button downloadbtn">
-            <i class="download icon"></i> {html.escape(name)}
+        <div class="button download">
+            <i class="icon download"></i> {html.escape(name)}
         </div>
     </a>
     <br>
@@ -49,7 +49,7 @@ def create_video_pages(config, channels, templates):
                     with open(os.path.join(config.output_path, f"comments/{v['id']}.html"), "w") as f:
                         f.write(templates["base"].format(title=html.escape(v['title'] + ' - Comments'), meta=page_meta,
                                                          content=comments_html))
-                    comments_link = f'<h3 class="ui small header" style="margin: 0;"><a href="/comments/{v["id"]}">View comments ({comments_count})</a></h3>'
+                    comments_link = f'<p class="comments"><a href="/comments/{v["id"]}">View comments ({comments_count})</a></p>'
                 # Set mp4 path
                 mp4path = f"{os.path.join(config.files_web_path + root[len(config.files_path):], base)}.mp4"
                 for ext in ["mp4", "webm", "mkv"]:

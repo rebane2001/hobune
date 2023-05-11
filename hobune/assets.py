@@ -18,9 +18,8 @@ def init_assets(output_path):
         os.makedirs(os.path.join(output_path, folder), exist_ok=True)
 
     # Copy assets
-    shutil.copy("templates/hobune.css", output_path)
-    shutil.copy("templates/hobune.js", output_path)
-    shutil.copy("templates/favicon.ico", output_path)
+    for asset in ["hobune.css", "hobune.js", "favicon.ico", "icons.woff"]:
+        shutil.copy(f"templates/{asset}", output_path)
 
     return templates
 
