@@ -26,3 +26,4 @@ Strikethrough means already implemented.
 - Extract metadata gathering from info.json into a separate module so it can easily be extended for fallbacks
 - Single video/channel mode
 - Video length
+- Add stats for how long creating the HTML took
