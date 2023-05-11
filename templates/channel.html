@@ -1,11 +1,12 @@
 <div class="container channels">
-  <div class="todo">
-    <div>
+  <div class="head">
+    <div class="title">
       <h1 style="display: inline-block;">{channel}</h1>
+      {subtitle}
       {note}
     </div>
     <div>
-      <div ><input type="text" id="searchbox" oninput="channelSearch()" placeholder="Search..."><i class="search icon"></i></div>
+      <div><input type="text" class="search" oninput="channelSearch()" placeholder="Search..."></div>
     </div>
   </div>
   <div class="channels flex-grid">

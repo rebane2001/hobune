@@ -19,11 +19,16 @@ for(var i = 0, l = toSort.length; i < l; i++) {
 */
 
 function channelSearch() {
-	document.querySelectorAll('.searchable').forEach(function(e) {
-    	if ((e.dataset.name.toLowerCase()).includes(document.getElementById('searchbox').value.toLowerCase())) {
+	const searchTerm = document.querySelector(".search").value.toLowerCase();
+	document.querySelectorAll('.searchable').forEach((e) => {
+    	if (searchTerm === "" || e.dataset.search.toLowerCase().includes(searchTerm)) {
     		e.classList.remove("hide");
     	} else {
     		e.classList.add("hide");
     	}
 	});
 }
+
+window.addEventListener("load", () => {
+	channelSearch();
+});

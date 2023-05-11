@@ -84,6 +84,15 @@ a {
     color: rgba(0,0,0,.85);
 }
 
+.card > .inner > .content .meta {
+    color: rgba(0,0,0,.4);
+    margin-bottom: 7px;
+}
+
+.card > .inner > .content .description {
+    color: rgba(0,0,0,.68);
+}
+
 .card > .inner > .image {
     width: 100%;
     border-radius: 3.1px 3.1px 0 0;
@@ -94,6 +103,24 @@ a {
     width: 100%;
     height: auto;
     border-radius: inherit;
+}
+
+.channels .head {
+    display: flex;
+    align-items: center;
+    margin: 20px 14px 0 14px;
+}
+
+.channels .head .title {
+    flex-grow: 1;
+}
+
+.channels .head .title h1 {
+    margin: 0;
+}
+
+.channels .subtitle {
+    margin: 0;
 }
 
 /* Header bar */
@@ -276,6 +303,19 @@ a {
 }
 
 /* Other */
+.search {
+    padding: 6px 14px;
+    border: 1px solid rgba(34,36,38,.15);
+    border-radius: 4px;
+    outline: 0;
+    color: rgba(0,0,0,.87);
+}
+
+.search:focus {
+    border-color: #85b7d9;
+    color: rgba(0,0,0,.8);
+}
+
 .rounded {
 	border-radius: 5px; 
     overflow: hidden; 
