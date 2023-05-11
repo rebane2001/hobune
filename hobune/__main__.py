@@ -1,5 +1,3 @@
-import os
-
 from hobune.assets import init_assets, update_templates
 from hobune.channels import initialize_channels, create_channel_pages
 from hobune.logger import logger
@@ -8,9 +6,6 @@ from hobune.videos import create_video_pages
 
 
 def main():
-    # TODO: Remove
-    os.chdir("..")
-
     config = load_config()
     if not config:
         exit()

@@ -112,6 +112,8 @@ def get_channel_search_string(channel: HobuneChannel):
 
 
 def get_channel_aka(channel: HobuneChannel):
+    if channel.id == "other":
+        return ""
     escaped_id = html.escape(channel.id)
     aka_string = f'<a href="https://www.youtube.com/channel/{escaped_id}">{escaped_id}</a>'
     if channel.username:

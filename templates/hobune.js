@@ -55,10 +55,10 @@ function channelSearch() {
 	document.querySelectorAll('.searchable').forEach((e) => {
 		let filtered = false;
 		for (const c of allowedClasses) {
-			if (!e.classList.contains(c)) filtered = true;
+			if (!e.querySelector(`.${c}`)) filtered = true;
 		}
 		for (const c of filteredClasses) {
-			if (e.classList.contains(c)) filtered = true;
+			if (e.querySelector(`.${c}`)) filtered = true;
 		}
 
     	if (!filtered && (searchTerm === "" || e.dataset.search.toLowerCase().includes(searchTerm))) {
