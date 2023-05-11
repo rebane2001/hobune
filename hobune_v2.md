@@ -19,7 +19,7 @@ Strikethrough means already implemented.
 - ~~Make it work on Windows by default~~
 - Dedupe videos by default
 - Comments page should show comments count (both top-level and all)
-- Link back to YouTube links whereever possible
+  ~~- Link back to YouTube links wherever possible~~
 - Make it easier to download everything, eg provide a wget command (maybe we could even download and generate a zip in JS for smaller channels?)
 - Support generating comments even if video itself isn't present
 - Cache folder listings (so we don't like /other a hundred thousand times)

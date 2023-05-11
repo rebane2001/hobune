@@ -8,16 +8,9 @@ from hobune.logger import logger
 from hobune.util import generate_meta_tags, quote_url, no_traverse
 
 
-def generate_download_button(name, url, tag=None, prefix="/dl"):
-    tag_part = ""
-    if tag:
-        tag_part = f"""
-            <a class="ui basic right pointing label">
-                {html.escape(tag)}
-            </a>"""
+def generate_download_button(name, url, prefix="/dl"):
     return f"""
     <a href="{prefix}{url}">
-        {tag_part}
         <div class="button download">
             <i class="icon download"></i> {html.escape(name)}
         </div>
@@ -75,8 +68,8 @@ def create_video_pages(config, channels, templates, html_ext):
                 for ext in ["webm", "mkv"]:
                     if (alt_file := f"{base}.{ext}") in files:
                         alt_file_url = config.files_web_path + (os.path.join(root, alt_file))[len(config.files_path):]
-                        download_buttons_html = generate_download_button("Download video", mp4path, tag="mp4") + \
-                                                generate_download_button("Download video", alt_file_url, tag=ext)
+                        download_buttons_html = generate_download_button("Download mp4", mp4path) + \
+                                                generate_download_button(f"Download {ext}", alt_file_url)
 
                 # Description download
                 if (desc_file := f"{base}.description") in files:
@@ -92,11 +85,12 @@ def create_video_pages(config, channels, templates, html_ext):
                     if vtt.startswith(base):
                         vtt_url = os.path.join(config.files_web_path + root[len(config.files_path):], vtt)
                         vtt_tag = vtt[len(base) + 1:-len('.vtt')]
-                        download_buttons_html += generate_download_button("Subtitles", vtt_url, tag=vtt_tag)
+                        download_buttons_html += generate_download_button(f"Subtitles ({vtt_tag})", vtt_url)
 
                 # Create HTML
                 page_html = templates["video"].format(
                     title=html.escape(v['title']),
+                    ytlink=f"<a class=\"ytlink\" href=https://www.youtube.com/watch?v={html.escape(v['id'])}>YT</a>",
                     description=html.escape(v['description']).replace('\n', '<br>'),
                     views=v['view_count'],
                     uploader_url=f"{config.web_root}channels/{html.escape(v['channel_id'])}{html_ext}" if is_full_channel(root) else f'{config.web_root}channels/other{html_ext}',

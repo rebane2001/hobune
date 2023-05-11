@@ -359,14 +359,18 @@ a {
     padding: 7px 14px;
 }
 
+.ytlink {
+    font-size: 14px;
+}
+
+.tag {
+    font-size: 14px;
+    color: rgba(0,0,0,.6);
+}
+
 .rounded {
 	border-radius: 5px; 
     overflow: hidden; 
-}
-
-.ui.footer.segment {
-  margin: 5em 0em 0em;
-  padding: 5em 0em;
 }
 
 .hide {
