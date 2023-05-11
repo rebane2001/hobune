@@ -29,7 +29,7 @@ def is_full_channel(root):
 
 def process_channel(channels, v, full):
     if full:
-        channel_id = v.get("channel_id", "NA")
+        channel_id = v.get("channel_id", v.get("uploader_id", "NA"))
         channel_name = v["uploader"]
         uploader_id = v.get("uploader_id")
         channel_username = uploader_id if uploader_id[0] != "@" and uploader_id != channel_id else None
@@ -94,6 +94,19 @@ def initialize_channels(config):
                 channels[channel_id].videos.append(v)
             except Exception as e:
                 print(f"Error processing {file}", e)
+    # Fix username-only entries with no channel ID
+    username_map = {}
+    for _, channel in channels.items():
+        if channel.username and channel.username != channel.id:
+            username_map[channel.username] = channel.id
+    for username, channel_id in username_map.items():
+        channel = channels.pop(username, None)
+        if channel:
+            channels[channel_id].removed_count += channel.removed_count
+            channels[channel_id].unlisted_count += channel.unlisted_count
+            channels[channel_id].videos += channel.videos
+            channels[channel_id].names += channel.names
+
     return channels
 
 
