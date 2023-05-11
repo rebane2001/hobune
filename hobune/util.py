@@ -19,7 +19,7 @@ def quote_url(url):
     if os.path.sep == "\\":
         url = url.replace("\\", "/")
         url = url.replace("%5C", "/")
-    return urllib.parse.quote(url)
+    return urllib.parse.quote(url).replace("%3A",":")
 
 
 def extract_ids_from_txt(filename):
