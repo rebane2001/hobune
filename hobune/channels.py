@@ -105,7 +105,7 @@ def initialize_channels(config):
             channels[channel_id].removed_count += channel.removed_count
             channels[channel_id].unlisted_count += channel.unlisted_count
             channels[channel_id].videos += channel.videos
-            channels[channel_id].names += channel.names
+            channels[channel_id].names = channels[channel_id].names | channel.names
 
     return channels
 
