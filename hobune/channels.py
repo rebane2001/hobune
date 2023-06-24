@@ -32,8 +32,8 @@ def process_channel(channels, v, full):
         channel_id = v.get("channel_id", v.get("uploader_id", "NA"))
         channel_name = v["uploader"]
         uploader_id = v.get("uploader_id")
-        channel_username = uploader_id if uploader_id[0] != "@" and uploader_id != channel_id else None
-        channel_handle = uploader_id if uploader_id[0] == "@" else None
+        channel_username = uploader_id if uploader_id and uploader_id[0] != "@" and uploader_id != channel_id else None
+        channel_handle = uploader_id if uploader_id and uploader_id[0] == "@" else None
         if not channel_id:
             raise KeyError("channel_id not found")
         if channel_id not in channels:
