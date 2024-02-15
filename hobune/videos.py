@@ -89,10 +89,10 @@ def create_video_pages(config, channels, templates, html_ext):
 
                 #Live chat download
                 for ext in ["7z", "zip"]:
-                    if (livechat_file := f"{base}.{ext}") in files:
-                        if("live_chat" in livechat_file):
-                            live_chat_url = config.files_web_path + (os.path.join(root, alt_file))[len(config.files_path):]
-                            generate_download_button("Live Chat", live_chat_url)
+                    for file in files:
+                        if "live_chat" in file and file.endswith(ext) and file.startswith(base):
+                            live_chat_url = config.files_web_path + (os.path.join(root, file))[len(config.files_path):]
+                            download_buttons_html += generate_download_button("Live Chat", live_chat_url)
 
                 
                 # Create HTML
