@@ -87,6 +87,14 @@ def create_video_pages(config, channels, templates, html_ext):
                         vtt_tag = vtt[len(base) + 1:-len('.vtt')]
                         download_buttons_html += generate_download_button(f"Subtitles ({vtt_tag})", vtt_url)
 
+                #Live chat download
+                for ext in ["7z", "zip"]:
+                    if (livechat_file := f"{base}.{ext}") in files:
+                        if("live_chat" in livechat_file):
+                            live_chat_url = config.files_web_path + (os.path.join(root, alt_file))[len(config.files_path):]
+                            generate_download_button("Live Chat", live_chat_url)
+
+                
                 # Create HTML
                 page_html = templates["video"].format(
                     title=html.escape(v['title']),
