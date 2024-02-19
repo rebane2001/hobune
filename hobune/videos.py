@@ -9,8 +9,9 @@ from hobune.util import generate_meta_tags, quote_url, no_traverse
 
 
 def generate_download_button(name, url, prefix="/dl"):
+    full_url = quote_url(f"{prefix}{url}")
     return f"""
-    <a href="{prefix}{url}">
+    <a href="{full_url}">
         <div class="button download">
             <i class="icon download"></i> {html.escape(name)}
         </div>
