@@ -17,8 +17,16 @@ function channelSort() {
 		.forEach(node=>container.appendChild(node));
 }
 
+function getSearchRegex(searchTerm) {
+	const regexParts = searchTerm.match(/^\/(.*)\/([dgimsuvy]*)$/);
+	try {
+		return regexParts && new RegExp(regexParts[1], regexParts[2]);
+	} catch(err) { console.error(err); }
+}
+
 function channelSearch() {
-	let searchTerm = document.querySelector(".search").value.toLowerCase();
+	let searchTerm = document.querySelector(".search").value;
+	
 	const allowedClasses = [];
 	const filteredClasses = [];
 	const availableClasses = ["unlisted", "removed"];
@@ -32,6 +40,9 @@ function channelSearch() {
 		}
 	}
 
+	const searchRegex = getSearchRegex(searchTerm);
+	searchTerm = searchTerm.toLowerCase();
+
 	document.querySelectorAll('.searchable').forEach((e) => {
 		let filtered = false;
 		for (const c of allowedClasses) {
@@ -41,7 +52,10 @@ function channelSearch() {
 			if (e.querySelector(`.${c}`)) filtered = true;
 		}
 
-    	if (!filtered && (searchTerm === "" || e.dataset.search.toLowerCase().includes(searchTerm))) {
+    	if (!filtered && (searchTerm === "" ||
+    		(!searchRegex && e.dataset.search.toLowerCase().includes(searchTerm)) ||
+    		(searchRegex && searchRegex.test(e.dataset.search))
+    	)) {
     		e.classList.remove("hide");
     	} else {
     		e.classList.add("hide");
