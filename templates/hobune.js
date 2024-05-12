@@ -1,3 +1,4 @@
+/** Sorts videos based on dropdown selection. */
 function channelSort() {
   const sortOption = document.querySelector(".sort").value;
   const [sortBy, direction] = sortOption.split("-");
@@ -17,6 +18,7 @@ function channelSort() {
     .forEach(node=>container.appendChild(node));
 }
 
+/** Returns a RegExp if searchTerm matches the /expression/flags format. */
 function getSearchRegex(searchTerm) {
   const regexParts = searchTerm.match(/^\/(.*)\/([dgimsuvy]*)$/);
   try {
@@ -24,8 +26,18 @@ function getSearchRegex(searchTerm) {
   } catch(err) { console.error(err); }
 }
 
+/**
+ * Filters visible videos to only those that match the search query.
+ * Non-public videos can be filtered by adding unlisted/removed (to show)
+ * or !unlisted/!removed (to hide) to the search query.
+ * RegExp can be used by writing the query in the /exp/flags format.
+ * Search is case-insensitive except for RegExp which requires the i flag.
+ */
 function channelSearch() {
-  let searchTerm = document.querySelector(".search").value;
+  const searchBox = document.querySelector(".search");
+  if (!searchBox) return;
+
+  let searchTerm = searchBox.value;
 
   const allowedClasses = [];
   const filteredClasses = [];
@@ -64,5 +76,8 @@ function channelSearch() {
 }
 
 window.addEventListener("load", () => {
+  // Always perform the search on page load, because:
+  // 1) Navigating to a previous page will retain the textbox contents
+  // 2) The search may have been performed while the DOM wasn't fully loaded
   channelSearch();
 });
