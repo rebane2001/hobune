@@ -190,6 +190,9 @@ def get_channel_aka(channel: HobuneChannel):
 def create_channel_pages(config, templates, channels, html_ext):
     channel_index = ""
     for channel in channels:
+        if channel == "other" and len(channels["other"].videos) == 0:
+            logger.debug("Skipping channel page for 'other' because it is empty")
+            continue
         logger.debug(f"Creating channel pages for {channels[channel].name}")
         videos_count_str = f"{len(channels[channel].videos)} videos{' (' + str(channels[channel].removed_count) + ' removed)' if channels[channel].removed_count > 0 else ''}{' (' + str(channels[channel].unlisted_count) + ' unlisted)' if channels[channel].unlisted_count > 0 else ''}"
         channel_index += f"""
