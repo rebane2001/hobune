@@ -56,6 +56,7 @@ def initialize_channels(config):
     # Generate removed and unlisted videos sets
     removed_videos = extract_ids_from_txt(config.removed_videos_file)
     unlisted_videos = extract_ids_from_txt(config.unlisted_videos_file)
+    processed_video_ids = set()
 
     channels = {
         "other": HobuneChannel("other", "Other videos")
@@ -71,10 +72,34 @@ def initialize_channels(config):
                 if v.get("_type") == "playlist" or (len(v["id"]) == 24 and v.get("extractor") == "youtube:tab"):
                     continue
                 channel_id = process_channel(channels, v, is_full_channel(root))
+
+                base = file[:-len(".info.json")]
+                v["has_video_file"] = False
+                for ext in ["mp4", "webm", "mkv"]:
+                    if base + f".{ext}" in files:
+                        v["has_video_file"] = True
+                        break
+
                 v["custom_thumbnail"] = "/default.png"
                 for ext in ["webp", "jpg", "png"]:
-                    if os.path.exists(x := os.path.join(root, file)[:-len('.info.json')] + f".{ext}"):
-                        v["custom_thumbnail"] = config.files_web_path + x[len(config.files_path):]
+                    if base + f".{ext}" in files:
+                        v["custom_thumbnail"] = config.files_web_path + (os.path.join(root, file)[:-len('.info.json')] + f".{ext}")[len(config.files_path):]
+
+                # Remember path of .info.json
+                v["root"] = root
+                v["file"] = file
+
+                # Skip duplicates
+                if v["id"] in processed_video_ids and len(old_v := [video for video in channels[channel_id].videos if video["id"] == v["id"]]):
+                    old_v = old_v[0]
+                    # If the previous duplicate has no video file, override it with the current one
+                    if not old_v["has_video_file"] and v["has_video_file"]:
+                        old_v["has_video_file"] = v["has_video_file"]
+                        old_v["root"] = v["root"]
+                        old_v["file"] = v["file"]
+                        old_v["custom_thumbnail"] = v["custom_thumbnail"]
+                    continue
+
                 # Tag video if removed
                 v["removed"] = (v["id"] in removed_videos)
                 if v["removed"]:
@@ -83,15 +108,14 @@ def initialize_channels(config):
                 v["unlisted"] = (v["id"] in unlisted_videos)
                 if v["unlisted"]:
                     channels[channel_id].unlisted_count += 1
-                # Remember path of .info.json
-                v["root"] = root
-                v["file"] = file
+
                 # Remove unnecessary keys to prevent memory exhaustion on big archives
-                [v.pop(k) for k in list(v.keys()) if not k in
-                                                         ["title", "id", "custom_thumbnail", "view_count", "upload_date",
-                                                          "removed", "unlisted", "root", "file"]
+                [v.pop(k) for k in list(v.keys()) if
+                 k not in ["title", "id", "custom_thumbnail", "view_count", "upload_date",
+                           "removed", "unlisted", "root", "file", "has_video_file"]
                  ]
                 channels[channel_id].videos.append(v)
+                processed_video_ids.add(v["id"])
             except Exception as e:
                 print(f"Error processing {file}", e)
     # Fix username-only entries with no channel ID
@@ -140,11 +164,11 @@ def get_channel_aka(channel: HobuneChannel):
 
 
 def create_channel_pages(config, templates, channels, html_ext):
-    channelindex = ""
+    channel_index = ""
     for channel in channels:
         logger.debug(f"Creating channel pages for {channels[channel].name}")
         videos_count_str = f"{len(channels[channel].videos)} videos{' (' + str(channels[channel].removed_count) + ' removed)' if channels[channel].removed_count > 0 else ''}{' (' + str(channels[channel].unlisted_count) + ' unlisted)' if channels[channel].unlisted_count > 0 else ''}"
-        channelindex += f"""
+        channel_index += f"""
                         <div class="card searchable" data-search="{html.escape(get_channel_search_string(channels[channel]))}">
                             <a href="{config.web_root}channels/{channel}{html_ext}" class="inner">
                                 <div class="content">
@@ -197,5 +221,5 @@ def create_channel_pages(config, templates, channels, html_ext):
             note="",
             subtitle="",
             sort=" hide",
-            cards=channelindex
+            cards=channel_index
         )))
