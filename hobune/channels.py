@@ -212,14 +212,14 @@ def create_channel_pages(config, templates, channels, html_ext):
             for v in sorted(channels[channel].videos, key=lambda x: x.get('upload_date', 0), reverse=True):
                 upload_date = v.get('upload_date', "00000000")
                 cards += f"""
-                <div class="card searchable" data-search="{html.escape(v['title'])}" data-date="{upload_date}" data-views="{v['view_count']}">
+                <div class="card searchable" data-search="{html.escape(v['title'])}" data-date="{upload_date}" data-views="{v.get('view_count', -1)}">
                     <a href="{config.web_root}videos/{v['id']}{html_ext}" class="inner">
                       <div class="image thumbnail">
                             <img loading="lazy" src="{quote_url(v['custom_thumbnail'])}">
                       </div>
                       <div class="content{' removed' if v["removed"] else ''}{' unlisted' if v["unlisted"] else ''}">
                         <h3 class="title">{html.escape(v['title'])}</h3>
-                        <p>{v['view_count']} views, {upload_date[:4]}-{upload_date[4:6]}-{upload_date[6:]}</p>
+                        <p>{v.get('view_count', -1)} views, {upload_date[:4]}-{upload_date[4:6]}-{upload_date[6:]}</p>
                       </div>
                     </a>
                 </div>

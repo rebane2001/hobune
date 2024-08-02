@@ -92,8 +92,8 @@ def create_video_pages(config, channels, templates, html_ext):
                 page_html = templates["video"].format(
                     title=html.escape(v['title']),
                     ytlink=f"<a class=\"ytlink\" href=https://www.youtube.com/watch?v={html.escape(v['id'])}>YT</a>",
-                    description=html.escape(v['description']).replace('\n', '<br>'),
-                    views=v['view_count'],
+                    description=html.escape(v.get('description', "N/A")).replace('\n', '<br>'),
+                    views=v.get('view_count', -1),
                     uploader_url=f"{config.web_root}channels/{html.escape(v.get('channel_id', v.get('uploader_id')))}{html_ext}" if is_full_channel(root) else f'{config.web_root}channels/other{html_ext}',
                     uploader_id={html.escape(v.get('channel_id', v.get('uploader_id')))},
                     uploader=html.escape(get_channel_name(v)),
