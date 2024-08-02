@@ -13,6 +13,7 @@ from hobune.util import quote_url, generate_meta_tags, extract_ids_from_txt, no_
 class HobuneChannel:
     id: str
     name: str
+    weak_name: Optional[bool] = False
     date: Optional[int] = 0
     removed_count: Optional[int] = 0
     unlisted_count: Optional[int] = 0
@@ -27,22 +28,42 @@ def is_full_channel(root):
     return True
 
 
+def get_channel_details(v):
+    channel_id = v.get("channel_id", v.get("uploader_id", "NA"))
+    uploader_id = v.get("uploader_id")
+    channel_username = uploader_id if uploader_id and uploader_id[0] != "@" and uploader_id != channel_id else None
+    channel_handle = uploader_id if uploader_id and uploader_id[0] == "@" else None
+    # Fix broken .info.json files that don't have the uploader field
+    weak_name = "uploader" in v
+    channel_name = v.get("uploader", channel_username or channel_handle or channel_id)
+    return [
+        channel_name,
+        weak_name,
+        channel_id,
+        uploader_id,
+        channel_username,
+        channel_handle,
+    ]
+
+
+def get_channel_name(v):
+    return v.get("uploader", get_channel_details(v)[0])
+
+
 def process_channel(channels, v, full):
     if full:
-        channel_id = v.get("channel_id", v.get("uploader_id", "NA"))
-        channel_name = v["uploader"]
-        uploader_id = v.get("uploader_id")
-        channel_username = uploader_id if uploader_id and uploader_id[0] != "@" and uploader_id != channel_id else None
-        channel_handle = uploader_id if uploader_id and uploader_id[0] == "@" else None
+        channel_name, weak_name, channel_id, uploader_id, channel_username, channel_handle = get_channel_details(v)
         if not channel_id:
             raise KeyError("channel_id not found")
         if channel_id not in channels:
-            channels[channel_id] = HobuneChannel(channel_id, channel_name)
+            channels[channel_id] = HobuneChannel(channel_id, channel_name, weak_name=weak_name)
             logger.debug(f"Added new channel {channel_name}")
-        if channels[channel_id].date < int(v["upload_date"]):
-            channels[channel_id].date = int(v["upload_date"])
-            channels[channel_id].name = channel_name
-        channels[channel_id].names.add(channel_name)
+        if channels[channel_id].date < int(v.get("upload_date", 1)):
+            channels[channel_id].date = int(v.get("upload_date", 1))
+            if not weak_name:
+                channels[channel_id].name = channel_name
+        if not weak_name:
+            channels[channel_id].names.add(channel_name)
         if channel_handle:
             channels[channel_id].handles.add(channel_handle)
         if channel_username:
@@ -83,14 +104,17 @@ def initialize_channels(config):
                 v["custom_thumbnail"] = "/default.png"
                 for ext in ["webp", "jpg", "png"]:
                     if base + f".{ext}" in files:
-                        v["custom_thumbnail"] = config.files_web_path + (os.path.join(root, file)[:-len('.info.json')] + f".{ext}")[len(config.files_path):]
+                        v["custom_thumbnail"] = config.files_web_path + (os.path.join(root, file)[
+                                                                         :-len('.info.json')] + f".{ext}")[
+                                                                        len(config.files_path):]
 
                 # Remember path of .info.json
                 v["root"] = root
                 v["file"] = file
 
                 # Skip duplicates
-                if v["id"] in processed_video_ids and len(old_v := [video for video in channels[channel_id].videos if video["id"] == v["id"]]):
+                if v["id"] in processed_video_ids and len(
+                        old_v := [video for video in channels[channel_id].videos if video["id"] == v["id"]]):
                     old_v = old_v[0]
                     # If the previous duplicate has no video file, override it with the current one
                     if not old_v["has_video_file"] and v["has_video_file"]:
@@ -181,19 +205,21 @@ def create_channel_pages(config, templates, channels, html_ext):
                             </a>
                         </div>
                     """
-        with open(channel_html_path := os.path.join(config.output_path, f"channels/{no_traverse(channel)}.html"), "w") as f:
+        with open(channel_html_path := os.path.join(config.output_path, f"channels/{no_traverse(channel)}.html"),
+                  "w") as f:
             cards = ""
             subtitle = f"<p class=\"subtitle\">{get_channel_aka(channels[channel])}<br>{videos_count_str}</p>"
-            for v in sorted(channels[channel].videos, key=lambda x: x['upload_date'], reverse=True):
+            for v in sorted(channels[channel].videos, key=lambda x: x.get('upload_date', 0), reverse=True):
+                upload_date = v.get('upload_date', "00000000")
                 cards += f"""
-                <div class="card searchable" data-search="{html.escape(v['title'])}" data-date="{v['upload_date']}" data-views="{v['view_count']}">
+                <div class="card searchable" data-search="{html.escape(v['title'])}" data-date="{upload_date}" data-views="{v['view_count']}">
                     <a href="{config.web_root}videos/{v['id']}{html_ext}" class="inner">
                       <div class="image thumbnail">
                             <img loading="lazy" src="{quote_url(v['custom_thumbnail'])}">
                       </div>
                       <div class="content{' removed' if v["removed"] else ''}{' unlisted' if v["unlisted"] else ''}">
                         <h3 class="title">{html.escape(v['title'])}</h3>
-                        <p>{v['view_count']} views, {v['upload_date'][:4]}-{v['upload_date'][4:6]}-{v['upload_date'][6:]}</p>
+                        <p>{v['view_count']} views, {upload_date[:4]}-{upload_date[4:6]}-{upload_date[6:]}</p>
                       </div>
                     </a>
                 </div>
@@ -210,7 +236,8 @@ def create_channel_pages(config, templates, channels, html_ext):
                 cards=cards
             )))
         if channels[channel].username:
-            shutil.copy(channel_html_path, os.path.join(config.output_path, f"channels/{no_traverse(channels[channel].username)}.html"))
+            shutil.copy(channel_html_path,
+                        os.path.join(config.output_path, f"channels/{no_traverse(channels[channel].username)}.html"))
     with open(os.path.join(config.output_path, "channels/index.html"), "w") as f:
         f.write(templates["base"].format(title="Channels", meta=generate_meta_tags(
             {

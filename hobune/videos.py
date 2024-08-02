@@ -2,7 +2,7 @@ import html
 import json
 import os
 
-from hobune.channels import is_full_channel
+from hobune.channels import is_full_channel, get_channel_name
 from hobune.comments import getCommentsHTML
 from hobune.logger import logger
 from hobune.util import generate_meta_tags, quote_url, no_traverse
@@ -36,7 +36,7 @@ def create_video_pages(config, channels, templates, html_ext):
                 page_meta = generate_meta_tags(
                     {
                         "description": v['description'][:256],
-                        "author": v['uploader']
+                        "author": get_channel_name(v)
                     }
                 )
                 # Generate comments
@@ -88,6 +88,7 @@ def create_video_pages(config, channels, templates, html_ext):
                         download_buttons_html += generate_download_button(f"Subtitles ({vtt_tag})", vtt_url)
 
                 # Create HTML
+                upload_date = v.get('upload_date', "00000000")
                 page_html = templates["video"].format(
                     title=html.escape(v['title']),
                     ytlink=f"<a class=\"ytlink\" href=https://www.youtube.com/watch?v={html.escape(v['id'])}>YT</a>",
@@ -95,8 +96,8 @@ def create_video_pages(config, channels, templates, html_ext):
                     views=v['view_count'],
                     uploader_url=f"{config.web_root}channels/{html.escape(v.get('channel_id', v.get('uploader_id')))}{html_ext}" if is_full_channel(root) else f'{config.web_root}channels/other{html_ext}',
                     uploader_id={html.escape(v.get('channel_id', v.get('uploader_id')))},
-                    uploader=html.escape(v['uploader']),
-                    date=f"{v['upload_date'][:4]}-{v['upload_date'][4:6]}-{v['upload_date'][6:]}",
+                    uploader=html.escape(get_channel_name(v)),
+                    date=f"{upload_date[:4]}-{upload_date[4:6]}-{upload_date[6:]}",
                     video=quote_url(mp4path),
                     thumbnail=quote_url(thumbnail),
                     download=download_buttons_html,
