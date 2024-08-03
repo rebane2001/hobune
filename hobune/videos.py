@@ -9,8 +9,9 @@ from hobune.util import generate_meta_tags, quote_url, no_traverse
 
 
 def generate_download_button(name, url, prefix="/dl"):
+    full_url = quote_url(f"{prefix}{url}")
     return f"""
-    <a href="{prefix}{url}">
+    <a href="{full_url}">
         <div class="button download">
             <i class="icon download"></i> {html.escape(name)}
         </div>
@@ -87,6 +88,14 @@ def create_video_pages(config, channels, templates, html_ext):
                         vtt_tag = vtt[len(base) + 1:-len('.vtt')]
                         download_buttons_html += generate_download_button(f"Subtitles ({vtt_tag})", vtt_url)
 
+                #Live chat download
+                for ext in ["7z", "zip"]:
+                    for file in files:
+                        if "live_chat" in file and file.endswith(ext) and file.startswith(base):
+                            live_chat_url = config.files_web_path + (os.path.join(root, file))[len(config.files_path):]
+                            download_buttons_html += generate_download_button("Live Chat", live_chat_url)
+
+                
                 # Create HTML
                 upload_date = v.get('upload_date', "00000000")
                 page_html = templates["video"].format(
